@@ -9,8 +9,8 @@ namespace oop_course
             System.Threading.Thread.CurrentThread.CurrentCulture =
                 System.Globalization.CultureInfo.InvariantCulture;
 
-            // Запускаємо третю задачу
-            Task3.Run();
+            // Тепер запускаємо четверту задачу
+            Task4.Run();
         }
     }
 }
