@@ -6,12 +6,11 @@ namespace oop_course
     {
         static void Main(string[] args)
         {
-            // Налаштування для крапки в числах
             System.Threading.Thread.CurrentThread.CurrentCulture =
                 System.Globalization.CultureInfo.InvariantCulture;
 
-            // Тепер запускаємо саме ДРУГУ задачу
-            Task2.Run();
+            // Запускаємо третю задачу
+            Task3.Run();
         }
     }
 }
