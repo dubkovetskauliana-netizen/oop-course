@@ -6,36 +6,41 @@ namespace ClinicApp
     {
         static void Main(string[] args)
         {
-            PatientManager patientManager = new PatientManager();
-            DoctorManager doctorManager = new DoctorManager();
-            AppointmentManager appointmentManager = new AppointmentManager(patientManager, doctorManager);
+            Clinic clinic = new Clinic("Медична Клініка");
 
             // Початкові дані
-            doctorManager.Add(new Doctor("Олег", "Сидоренко", "Кардіологія", "LIC-001", "0441234567", 8, 16));
-            doctorManager.Add(new Doctor("Наталія", "Мороз", "Неврологія", "LIC-002", "0442345678", 9, 18));
-            doctorManager.Add(new Doctor("Андрій", "Власенко", "Педіатрія", "LIC-003", "0443456789", 8, 17));
+            clinic.Doctors.Add(new Doctor("Олег", "Сидоренко", "Кардіологія", "LIC-001", "0441234567", 8, 16));
+            clinic.Doctors.Add(new Doctor("Наталія", "Мороз", "Неврологія", "LIC-002", "0442345678", 9, 18));
+            clinic.Doctors.Add(new Doctor("Андрій", "Власенко", "Педіатрія", "LIC-003", "0443456789", 8, 17));
 
-            patientManager.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 12), "A+", "0501234567"));
-            patientManager.Add(new Patient("Олена", "Коваль", new DateTime(1993, 8, 20), "B-", "0672345678"));
-            patientManager.Add(new Patient("Максим", "Бойко", new DateTime(2010, 2, 10), "O+", "0933456789"));
+            clinic.Patients.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 12), "A+", "0501234567"));
+            clinic.Patients.Add(new Patient("Олена", "Коваль", new DateTime(1993, 8, 20), "B-", "0672345678"));
+            clinic.Patients.Add(new Patient("Максим", "Бойко", new DateTime(2010, 2, 10), "O+", "0933456789"));
+            clinic.Patients.Add(new Patient("Марія", "Шевченко", new DateTime(1990, 1, 1), "AB+", "0501112233"));
 
-            // Демонстраційні записи з прикладу
-            appointmentManager.Book(1, 1, new DateTime(2026, 5, 9, 10, 0, 0), 30);
-            appointmentManager.Book(2, 2, new DateTime(2026, 5, 9, 11, 0, 0), 45);
-            appointmentManager.Book(3, 3, new DateTime(2026, 5, 10, 9, 0, 0), 20);
-            appointmentManager.Book(99, 1, new DateTime(2026, 5, 10, 10, 0, 0)); // Тест помилки неіснуючого пацієнта
+            // Демонстраційні записи
+            clinic.Appointments.Book(1, 1, new DateTime(2026, 5, 9, 10, 0, 0), 30);
+            clinic.Appointments.Book(2, 2, new DateTime(2026, 5, 9, 11, 0, 0), 45);
+            clinic.Appointments.Book(3, 3, new DateTime(2026, 5, 10, 9, 0, 0), 20);
 
-            RunMainChoiceMenu(patientManager, doctorManager, appointmentManager);
+            Console.WriteLine();
+            clinic.DisplaySchedule(new DateTime(2026, 5, 9));
+            Console.WriteLine();
+            clinic.GenerateReport();
+
+            RunMainChoiceMenu(clinic);
         }
 
-        static void RunMainChoiceMenu(PatientManager pManager, DoctorManager dManager, AppointmentManager aManager)
+        static void RunMainChoiceMenu(Clinic clinic)
         {
             while (true)
             {
-                Console.WriteLine("\n=== ГОЛОВНЕ МЕНЮ КЛІНІКИ ===");
+                Console.WriteLine($"\n=== ГОЛОВНЕ МЕНЮ: {clinic.Name} ===");
                 Console.WriteLine("1. Керування пацієнтами");
                 Console.WriteLine("2. Керування лікарями");
                 Console.WriteLine("3. Керування записами (Appointments)");
+                Console.WriteLine("4. Переглянути розклад на дату");
+                Console.WriteLine("5. Згенерувати звіт");
                 Console.WriteLine("0. Вихід");
                 Console.Write("Оберіть розділ: ");
 
@@ -45,13 +50,27 @@ namespace ClinicApp
                 switch (choice)
                 {
                     case "1":
-                        RunPatientMenu(pManager);
+                        RunPatientMenu(clinic.Patients);
                         break;
                     case "2":
-                        RunDoctorMenu(dManager);
+                        RunDoctorMenu(clinic.Doctors);
                         break;
                     case "3":
-                        RunAppointmentMenu(aManager, pManager, dManager);
+                        RunAppointmentMenu(clinic.Appointments, clinic.Patients, clinic.Doctors);
+                        break;
+                    case "4":
+                        Console.Write("Введіть дату (формат: yyyy-MM-dd): ");
+                        if (DateTime.TryParse(Console.ReadLine(), out DateTime date))
+                        {
+                            clinic.DisplaySchedule(date);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Некоректний формат дати.");
+                        }
+                        break;
+                    case "5":
+                        clinic.GenerateReport();
                         break;
                     case "0":
                         return;
