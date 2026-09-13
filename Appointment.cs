@@ -9,25 +9,40 @@ namespace ClinicApp
         public int Id { get; }
         public int PatientId { get; set; }
         public int DoctorId { get; set; }
-        public DateTime DateTime { get; set; }
+        public DateTime ScheduledAt { get; set; }
         public int DurationMinutes { get; set; }
-        public string Status { get; set; } // "Заплановано", "Скасовано", "Виконано"
-        public string Notes { get; set; }
+        public string Status { get; set; } = "Заплановано";
+        public string Notes { get; set; } = string.Empty;
 
-        public Appointment(int patientId, int doctorId, DateTime dateTime, int durationMinutes = 30)
+        public DateTime EndsAt => ScheduledAt.AddMinutes(DurationMinutes);
+
+        public bool IsUpcoming => Status == "Заплановано" && ScheduledAt > DateTime.Now;
+
+        public Appointment(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes = 30)
         {
             Id = _idCounter++;
             PatientId = patientId;
             DoctorId = doctorId;
-            DateTime = dateTime;
+            ScheduledAt = scheduledAt;
             DurationMinutes = durationMinutes;
-            Status = "Заплановано";
-            Notes = string.Empty;
         }
 
-        public override string ToString()
+        public bool Cancel(string reason = "")
         {
-            return $"Запис #{Id} | Пацієнт ID: {PatientId} | Лікар ID: {DoctorId} | Дата: {DateTime:dd.MM.yyyy HH:mm} | Статус: {Status}";
+            if (Status != "Заплановано") return false;
+            Status = "Скасовано";
+            if (!string.IsNullOrEmpty(reason))
+            {
+                Notes = reason;
+            }
+            return true;
+        }
+
+        public bool Complete()
+        {
+            if (Status != "Заплановано") return false;
+            Status = "Виконано";
+            return true;
         }
     }
 }
