@@ -1,33 +1,44 @@
 ﻿using System;
 
-namespace oop_course
+namespace Lab02
 {
-    public static class Task2
+    public class Task2
     {
         public static void Run()
         {
-            // зчитуємо ціну прийому
-            Console.Write("Введіть ціну прийому (грн): ");
-            string s1 = Console.ReadLine()!;
-            double price = double.Parse(s1);
+            int n = int.Parse(Console.ReadLine()!);
+            int[] queue = new int[n];
 
-            // зчитуємо кількість
-            Console.Write("Введіть кількість прийомів: ");
-            string s2 = Console.ReadLine()!;
-            int count = int.Parse(s2);
+            for (int i = 0; i < n; i++)
+            {
+                queue[i] = int.Parse(Console.ReadLine()!);
+            }
 
-            // зчитуємо знижку
-            Console.Write("Введіть знижку (%): ");
-            string s3 = Console.ReadLine()!;
-            int disc = int.Parse(s3);
+            // Зберігаємо початковий рядок до сортування
+            string beforeSort = string.Join(" ", queue);
 
-            // рахуємо коефіцієнт знижки
-            double koef = 1.0 - (disc / 100.0);
-            // рахуємо загальну суму
-            double total = price * count * koef;
+            // Сортування бульбашкою за зростанням
+            for (int i = 0; i < n - 1; i++)
+            {
+                for (int j = 0; j < n - i - 1; j++)
+                {
+                    if (queue[j] > queue[j + 1])
+                    {
+                        int temp = queue[j];
+                        queue[j] = queue[j + 1];
+                        queue[j + 1] = temp;
+                    }
+                }
+            }
 
-            // виводимо результат
-            Console.WriteLine($"Сума: {total:F2} грн");
+            string afterSort = string.Join(" ", queue);
+            int minVal = queue[0];
+            int maxVal = queue[n - 1];
+
+            Console.WriteLine($"Черга (до):     {beforeSort}");
+            Console.WriteLine($"Черга (після): {afterSort}");
+            Console.WriteLine($"Найдешевший:    {minVal} грн");
+            Console.WriteLine($"Найдорожчий:    {maxVal} грн");
         }
     }
 }
