@@ -1,27 +1,42 @@
 ﻿using System;
 
-namespace oop_course
+namespace Lab02
 {
-    public static class Task1
+    public class Task1
     {
         public static void Run()
         {
-            // спочатку просимо ввести вагу в кілограмах
-            Console.Write("Введіть вагу пацієнта (кг): ");
-            string vstr = Console.ReadLine()!;
-            double w = double.Parse(vstr);
+            int count = int.Parse(Console.ReadLine()!);
+            double[] arr = new double[count];
 
-            // тепер просимо ввести зріст у метрах
-            Console.Write("Введіть зріст пацієнта (м): ");
-            string zstr = Console.ReadLine()!;
-            double h = double.Parse(zstr);
+            for (int i = 0; i < count; i++)
+            {
+                arr[i] = double.Parse(Console.ReadLine()!);
+            }
 
-            // рахуємо індекс за формулою з умови задачі
-            // зріст на зріст обов'язково беремо в дужки для пріоритету
-            double imt = w / (h * h);
+            double total = 0;
+            double min = arr[0];
+            double max = arr[0];
 
-            // виводимо відповідь з форматом F2 (2 знаки після коми)
-            Console.WriteLine($"IMT: {imt:F2}");
+            for (int i = 0; i < arr.Length; i++)
+            {
+                total += arr[i];
+                if (arr[i] < min) min = arr[i];
+                if (arr[i] > max) max = arr[i];
+            }
+
+            double avg = total / count;
+
+            int aboveAvgCount = 0;
+            for (int i = 0; i < arr.Length; i++)
+            {
+                if (arr[i] > avg)
+                {
+                    aboveAvgCount++;
+                }
+            }
+
+            Console.WriteLine($"Кількість: {count} / Середня вага: {avg:F1} кг / Мін / Макс: {min} / {max} кг / Вище середнього: {aboveAvgCount} з {count}");
         }
     }
 }
