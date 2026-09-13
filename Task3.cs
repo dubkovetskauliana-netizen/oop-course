@@ -1,35 +1,44 @@
 ﻿using System;
 
-namespace oop_course
+namespace Lab02
 {
-    public static class Task3
+    public class Task3
     {
         public static void Run()
         {
-            // просимо користувача ввести рік народження
-            Console.Write("Введіть рік народження пацієнта: ");
-            string vvod = Console.ReadLine()!;
-            int y = int.Parse(vvod);
+            string[] days = { "Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота", "Неділя" };
+            int[] patients = new int[7];
 
-            // рахуємо вік від фіксованого 2026 року за умовою задачі
-            int age = 2026 - y;
+            for (int i = 0; i < 7; i++)
+            {
+                patients[i] = int.Parse(Console.ReadLine()!);
+            }
 
-            // виводимо перший рядок результату
-            Console.WriteLine($"Вік: {age} р.");
+            int total = 0;
+            int maxIdx = 0;
+            int minIdx = 0;
 
-            // визначаємо категорію через перевірку умов
-            if (age <= 17)
+            for (int i = 0; i < 7; i++)
             {
-                Console.WriteLine("Категорія: дитина");
+                total += patients[i];
+                if (patients[i] > patients[maxIdx])
+                {
+                    maxIdx = i;
+                }
+                if (patients[i] < patients[minIdx])
+                {
+                    minIdx = i;
+                }
             }
-            else if (age <= 59)
+
+            for (int i = 0; i < 7; i++)
             {
-                Console.WriteLine("Категорія: дорослий");
+                Console.WriteLine($"{days[i],-11} : {patients[i]} пацієнтів");
             }
-            else
-            {
-                Console.WriteLine("Категорія: пенсіонер");
-            }
+
+            Console.WriteLine($"Разом:      {total}");
+            Console.WriteLine($"Найбільше:  {days[maxIdx]} ({patients[maxIdx]})");
+            Console.WriteLine($"Найменше:   {days[minIdx]} ({patients[minIdx]})");
         }
     }
 }
