@@ -8,6 +8,7 @@ namespace ClinicApp
         {
             PatientManager patientManager = new PatientManager();
             DoctorManager doctorManager = new DoctorManager();
+            AppointmentManager appointmentManager = new AppointmentManager(patientManager, doctorManager);
 
             // Початкові дані
             doctorManager.Add(new Doctor("Олег", "Сидоренко", "Кардіологія", "LIC-001", "0441234567", 8, 16));
@@ -18,17 +19,23 @@ namespace ClinicApp
             patientManager.Add(new Patient("Олена", "Коваль", new DateTime(1993, 8, 20), "B-", "0672345678"));
             patientManager.Add(new Patient("Максим", "Бойко", new DateTime(2010, 2, 10), "O+", "0933456789"));
 
-            RunMainChoiceMenu(patientManager, doctorManager);
+            // Демонстраційні записи з прикладу
+            appointmentManager.Book(1, 1, new DateTime(2026, 5, 9, 10, 0, 0), 30);
+            appointmentManager.Book(2, 2, new DateTime(2026, 5, 9, 11, 0, 0), 45);
+            appointmentManager.Book(3, 3, new DateTime(2026, 5, 10, 9, 0, 0), 20);
+            appointmentManager.Book(99, 1, new DateTime(2026, 5, 10, 10, 0, 0)); // Тест помилки неіснуючого пацієнта
+
+            RunMainChoiceMenu(patientManager, doctorManager, appointmentManager);
         }
 
-        static void RunMainChoiceMenu(PatientManager pManager, DoctorManager dManager)
+        static void RunMainChoiceMenu(PatientManager pManager, DoctorManager dManager, AppointmentManager aManager)
         {
             while (true)
             {
                 Console.WriteLine("\n=== ГОЛОВНЕ МЕНЮ КЛІНІКИ ===");
                 Console.WriteLine("1. Керування пацієнтами");
                 Console.WriteLine("2. Керування лікарями");
-                Console.WriteLine("3. Демонстрація записів (Appointment)");
+                Console.WriteLine("3. Керування записами (Appointments)");
                 Console.WriteLine("0. Вихід");
                 Console.Write("Оберіть розділ: ");
 
@@ -44,7 +51,7 @@ namespace ClinicApp
                         RunDoctorMenu(dManager);
                         break;
                     case "3":
-                        RunAppointmentDemo();
+                        RunAppointmentMenu(aManager, pManager, dManager);
                         break;
                     case "0":
                         return;
@@ -55,27 +62,102 @@ namespace ClinicApp
             }
         }
 
-        static void RunAppointmentDemo()
+        static void RunAppointmentMenu(AppointmentManager manager, PatientManager pManager, DoctorManager dManager)
         {
-            Console.WriteLine("=== Демонстрація класу Appointment ===");
+            while (true)
+            {
+                Console.WriteLine("\n--- МЕНЮ ЗАПИСІВ ---");
+                Console.WriteLine("1. Показати всі майбутні записи");
+                Console.WriteLine("2. Створити новий запис (Book)");
+                Console.WriteLine("3. Скасувати запис (Cancel)");
+                Console.WriteLine("4. Позначити запис як виконаний (Complete)");
+                Console.WriteLine("5. Знайти записи пацієнта");
+                Console.WriteLine("6. Знайти записи лікаря");
+                Console.WriteLine("0. Назад у головне меню");
+                Console.Write("Оберіть опцію: ");
 
-            Appointment a1 = new Appointment(1, 1, new DateTime(2026, 5, 9, 10, 0, 0), 30);
-            Appointment a2 = new Appointment(2, 2, new DateTime(2026, 5, 9, 11, 0, 0), 45);
-            Appointment a3 = new Appointment(3, 3, new DateTime(2026, 5, 10, 9, 0, 0), 20);
+                string? choice = Console.ReadLine();
+                Console.WriteLine();
 
-            Console.WriteLine(a1);
-            Console.WriteLine(a2);
-            Console.WriteLine(a3);
+                switch (choice)
+                {
+                    case "1":
+                        Console.WriteLine("Майбутні записи:");
+                        manager.DisplayList(manager.GetUpcoming());
+                        break;
+                    case "2":
+                        Console.WriteLine("Доступні пацієнти:");
+                        pManager.DisplayAll();
+                        Console.WriteLine("\nДоступні лікарі:");
+                        dManager.DisplayAll();
 
-            // Тест зміни статусів
-            a1.Cancel("Пацієнт не зміг прийти");
-            a2.Complete();
+                        Console.Write("\nВведіть ID пацієнта: ");
+                        if (int.TryParse(Console.ReadLine(), out int pId))
+                        {
+                            Console.Write("Введіть ID лікаря: ");
+                            if (int.TryParse(Console.ReadLine(), out int dId))
+                            {
+                                Console.Write("Введіть дату та час (формат: yyyy-MM-dd HH:mm): ");
+                                if (DateTime.TryParse(Console.ReadLine(), out DateTime dt))
+                                {
+                                    Console.Write("Введіть тривалість у хвилинах (за замовчуванням 30): ");
+                                    string? durationInput = Console.ReadLine();
+                                    int duration = int.TryParse(durationInput, out int dMinutes) ? dMinutes : 30;
 
-            Console.WriteLine("\n// Після Cancel та Complete:");
-            Console.WriteLine(a1);
-            Console.WriteLine(a2);
-            Console.WriteLine(a3);
-            Console.WriteLine(new string('=', 40));
+                                    manager.Book(pId, dId, dt, duration);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Некоректний формат дати.");
+                                }
+                            }
+                            else { Console.WriteLine("Некоректний ID лікаря."); }
+                        }
+                        else { Console.WriteLine("Некоректний ID пацієнта."); }
+                        break;
+                    case "3":
+                        Console.Write("Введіть ID запису для скасування: ");
+                        if (int.TryParse(Console.ReadLine(), out int cancelId))
+                        {
+                            Console.Write("Введіть причину скасування (опціонально): ");
+                            string reason = Console.ReadLine() ?? "";
+                            manager.Cancel(cancelId, reason);
+                        }
+                        else { Console.WriteLine("Некоректний ID."); }
+                        break;
+                    case "4":
+                        Console.Write("Введіть ID запису для завершення: ");
+                        if (int.TryParse(Console.ReadLine(), out int completeId))
+                        {
+                            manager.Complete(completeId);
+                        }
+                        else { Console.WriteLine("Некоректний ID."); }
+                        break;
+                    case "5":
+                        Console.Write("Введіть ID пацієнта: ");
+                        if (int.TryParse(Console.ReadLine(), out int patientId))
+                        {
+                            Console.WriteLine($"Записи пацієнта #{patientId}:");
+                            manager.DisplayList(manager.GetByPatient(patientId));
+                        }
+                        else { Console.WriteLine("Некоректний ID."); }
+                        break;
+                    case "6":
+                        Console.Write("Введіть ID лікаря: ");
+                        if (int.TryParse(Console.ReadLine(), out int doctorId))
+                        {
+                            Console.WriteLine($"Записи лікаря #{doctorId}:");
+                            manager.DisplayList(manager.GetByDoctor(doctorId));
+                        }
+                        else { Console.WriteLine("Некоректний ID."); }
+                        break;
+                    case "0":
+                        return;
+                    default:
+                        Console.WriteLine("Невірний вибір.");
+                        break;
+                }
+            }
         }
 
         static void RunPatientMenu(PatientManager manager)
