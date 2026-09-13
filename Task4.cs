@@ -1,43 +1,58 @@
 ﻿using System;
+using System.Linq;
 
-namespace oop_course
+namespace Lab02
 {
-    public static class Task4
+    public class Task4
     {
         public static void Run()
         {
-            // зчитуємо перший показник - систолічний тиск
-            Console.Write("Введіть систолічний тиск: ");
-            string v1 = Console.ReadLine()!;
-            int s = int.Parse(v1);
+            int n = int.Parse(Console.ReadLine()!);
+            int m = int.Parse(Console.ReadLine()!);
+            int[,] matrix = new int[n, m];
 
-            // зчитуємо другий показник - діастолічний тиск
-            Console.Write("Введіть діастолічний тиск: ");
-            string v2 = Console.ReadLine()!;
-            int d = int.Parse(v2);
-
-            // змінна для збереження статусу
-            string status;
-            // перевіряємо умови по порядку від норми до гіпертонії
-            if (s < 120 && d < 80)
+            for (int i = 0; i < n; i++)
             {
-                status = "норма";
-            }
-            else if (s < 130 && d < 80)
-            {
-                status = "підвищений";
-            }
-            else if (s < 140 || d < 90)
-            {
-                status = "гіпертонія 1 ступеня";
-            }
-            else
-            {
-                status = "гіпертонія 2 ступеня";
+                string[] parts = Console.ReadLine()!.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                for (int j = 0; j < m; j++)
+                {
+                    matrix[i, j] = int.Parse(parts[j]);
+                }
             }
 
-            // виводимо фінальний рядок за шаблоном з методички
-            Console.WriteLine($"Тиск: {s}/{d} - {status}");
+            // Суми по рядках та пошук максимуму
+            int maxVal = matrix[0, 0];
+            int maxRow = 0;
+            int maxCol = 0;
+
+            for (int i = 0; i < n; i++)
+            {
+                int rowSum = 0;
+                for (int j = 0; j < m; j++)
+                {
+                    rowSum += matrix[i, j];
+                    if (matrix[i, j] > maxVal)
+                    {
+                        maxVal = matrix[i, j];
+                        maxRow = i;
+                        maxCol = j;
+                    }
+                }
+                Console.WriteLine($"Лікар {i + 1}: {rowSum} прийомів");
+            }
+
+            // Суми по стовпцях
+            int[] colSums = new int[m];
+            for (int j = 0; j < m; j++)
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    colSums[j] += matrix[i, j];
+                }
+            }
+
+            Console.WriteLine($"По днях: {string.Join(", ", colSums)}");
+            Console.WriteLine($"Максимум: {maxVal} (Лікар {maxRow + 1}, День {maxCol + 1})");
         }
     }
 }
