@@ -1,79 +1,57 @@
 ﻿using System;
 
-namespace oop_course
+namespace Lab02
 {
-    public static class Task8
+    public class Task8
     {
-        public static double CalculateBMI(double weight, double height)
-        {
-            return weight / (height * height);
-        }
-
-        public static string GetBMICategory(double bmi)
-        {
-            if (bmi < 18.5) return "недостаня вага";
-            if (bmi < 25.0) return "норма";
-            if (bmi < 30.0) return "надмірна вага";
-            return "ожиріння";
-        }
-
-        public static double CalculateCost(double price, int count, int discount)
-        {
-            double koef = 1.0 - (discount / 100.0);
-            return price * count * koef;
-        }
-        public static string GetAgeCategory(int age)
-        {
-            if (age <= 17) return "дитина";
-            if (age <= 59) return "дорослий";
-            return "пенсіонер";
-        }
-
-        public static string GetPressureStatus(int systolic, int diastolic)
-        {
-            if (systolic < 120 && diastolic < 80) return "норма";
-            if (systolic < 130 && diastolic < 80) return "підвищений";
-            if (systolic < 140 || diastolic < 90) return "гіпертонія 1 ступеня";
-            return "гіпертонія 2 ступеня";
-        }
-
         public static void Run()
         {
-            Console.Write("Введіть вагу (кг): ");
-            double weight = double.Parse(Console.ReadLine()!);
+            int d = int.Parse(Console.ReadLine()!);
+            int w = int.Parse(Console.ReadLine()!);
 
-            Console.Write("Введіть зріст (м): ");
-            double height = double.Parse(Console.ReadLine()!);
+            int[,,] data = new int[d, w, 2];
 
-            Console.Write("Введіть ціну прийому (грн): ");
-            double price = double.Parse(Console.ReadLine()!);
-            Console.Write("Введіть кількість прийомів: ");
-            int count = int.Parse(Console.ReadLine()!);
+            for (int i = 0; i < d; i++)
+            {
+                for (int j = 0; j < w; j++)
+                {
+                    for (int k = 0; k < 2; k++)
+                    {
+                        data[i, j, k] = int.Parse(Console.ReadLine()!);
+                    }
+                }
+            }
 
-            Console.Write("Введіть знижку (%): ");
-            int discount = int.Parse(Console.ReadLine()!);
+            int[] departmentTotals = new int[d];
+            int maxPatients = -1;
+            int mostLoadedDept = 0;
 
-            Console.Write("Введіть рік народження: ");
-            int birthYear = int.Parse(Console.ReadLine()!);
+            for (int i = 0; i < d; i++)
+            {
+                Console.WriteLine($"Відділення {i + 1}:");
+                int totalDeptPatients = 0;
 
-            Console.Write("Введіть систолічний тиск: ");
-            int systolic = int.Parse(Console.ReadLine()!);
+                for (int j = 0; j < w; j++)
+                {
+                    int morning = data[i, j, 0];
+                    int evening = data[i, j, 1];
+                    int weekSum = morning + evening;
+                    totalDeptPatients += weekSum;
 
-            Console.Write("Введіть діастолічний тиск: ");
-            int diastolic = int.Parse(Console.ReadLine()!);
+                    Console.WriteLine($"  Тиждень {j + 1}: ранок {morning}, вечір {evening} -> разом {weekSum}");
+                }
 
-            double bmi = CalculateBMI(weight, height);
-            string bmiCat = GetBMICategory(bmi);
-            double totalCost = CalculateCost(price, count, discount);
-            int age = 2026 - birthYear;
-            string ageCat = GetAgeCategory(age);
-            string pressureStatus = GetPressureStatus(systolic, diastolic);
+                departmentTotals[i] = totalDeptPatients;
+                Console.WriteLine($"Разом: {totalDeptPatients} пацієнтів");
 
-            Console.WriteLine();
-            Console.WriteLine($"IMT: {bmi:F2} -> {bmiCat}");
-            Console.WriteLine($"Сума: {totalCost:F2} грн");
-            Console.WriteLine($"Вік: {age} р., категорія: {ageCat}");
-            Console.WriteLine($"Тиск: {systolic}/{diastolic} – {pressureStatus}");
+                if (totalDeptPatients > maxPatients)
+                {
+                    maxPatients = totalDeptPatients;
+                    mostLoadedDept = i + 1;
+                }
+            }
+
+            Console.WriteLine($"Найзавантаженіше: Відділення {mostLoadedDept} ({maxPatients} пацієнтів)");
         }
     }
 }
