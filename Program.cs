@@ -9,10 +9,14 @@ namespace ClinicApp
             PatientManager patientManager = new PatientManager();
             DoctorManager doctorManager = new DoctorManager();
 
-            // Початкові дані для лікарів
+            // Початкові дані
             doctorManager.Add(new Doctor("Олег", "Сидоренко", "Кардіологія", "LIC-001", "0441234567", 8, 16));
             doctorManager.Add(new Doctor("Наталія", "Мороз", "Неврологія", "LIC-002", "0442345678", 9, 18));
             doctorManager.Add(new Doctor("Андрій", "Власенко", "Педіатрія", "LIC-003", "0443456789", 8, 17));
+
+            patientManager.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 12), "A+", "0501234567"));
+            patientManager.Add(new Patient("Олена", "Коваль", new DateTime(1993, 8, 20), "B-", "0672345678"));
+            patientManager.Add(new Patient("Максим", "Бойко", new DateTime(2010, 2, 10), "O+", "0933456789"));
 
             RunMainChoiceMenu(patientManager, doctorManager);
         }
@@ -24,6 +28,7 @@ namespace ClinicApp
                 Console.WriteLine("\n=== ГОЛОВНЕ МЕНЮ КЛІНІКИ ===");
                 Console.WriteLine("1. Керування пацієнтами");
                 Console.WriteLine("2. Керування лікарями");
+                Console.WriteLine("3. Демонстрація записів (Appointment)");
                 Console.WriteLine("0. Вихід");
                 Console.Write("Оберіть розділ: ");
 
@@ -38,6 +43,9 @@ namespace ClinicApp
                     case "2":
                         RunDoctorMenu(dManager);
                         break;
+                    case "3":
+                        RunAppointmentDemo();
+                        break;
                     case "0":
                         return;
                     default:
@@ -45,6 +53,29 @@ namespace ClinicApp
                         break;
                 }
             }
+        }
+
+        static void RunAppointmentDemo()
+        {
+            Console.WriteLine("=== Демонстрація класу Appointment ===");
+
+            Appointment a1 = new Appointment(1, 1, new DateTime(2026, 5, 9, 10, 0, 0), 30);
+            Appointment a2 = new Appointment(2, 2, new DateTime(2026, 5, 9, 11, 0, 0), 45);
+            Appointment a3 = new Appointment(3, 3, new DateTime(2026, 5, 10, 9, 0, 0), 20);
+
+            Console.WriteLine(a1);
+            Console.WriteLine(a2);
+            Console.WriteLine(a3);
+
+            // Тест зміни статусів
+            a1.Cancel("Пацієнт не зміг прийти");
+            a2.Complete();
+
+            Console.WriteLine("\n// Після Cancel та Complete:");
+            Console.WriteLine(a1);
+            Console.WriteLine(a2);
+            Console.WriteLine(a3);
+            Console.WriteLine(new string('=', 40));
         }
 
         static void RunPatientMenu(PatientManager manager)
