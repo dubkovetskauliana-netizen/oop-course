@@ -18,7 +18,14 @@ public class Appointment
     public int DurationMinutes
     {
         get => _durationMinutes;
-        set => _durationMinutes = value;
+        set
+        {
+            if (value <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(DurationMinutes), "Тривалість візиту має бути більшою за 0.");
+            }
+            _durationMinutes = value;
+        }
     }
 
     public DateTime EndsAt => ScheduledAt.AddMinutes(DurationMinutes);
