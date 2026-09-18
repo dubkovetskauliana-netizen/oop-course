@@ -11,6 +11,7 @@ public class Patient
     private string _lastName = "";
     private DateTime _dateOfBirth;
     private string _phone = "";
+    private string _email = "";
 
     public int Id { get; }
 
@@ -38,8 +39,13 @@ public class Patient
         set { ClinicValidator.ValidatePhone(value); _phone = value; }
     }
 
+    public string Email
+    {
+        get => _email;
+        set { ClinicValidator.ValidateEmail(value); _email = value; }
+    }
+
     public BloodType BloodType { get; set; }
-    public string Email { get; set; }
 
     public string FullName => FirstName + " " + LastName;
     public int Age
@@ -67,7 +73,7 @@ public class Patient
         DateOfBirth = dob;
         BloodType = bloodType;
         Phone = phone;
-        Email = "";
+        Email = "test@clinic.com";
     }
 
     public string GetAgeCategory()
@@ -79,6 +85,6 @@ public class Patient
 
     public override string ToString()
     {
-        return "[" + Id + "] " + FullName + " | Вік: " + ClinicFormatter.FormatAge(Age) + " (" + GetAgeCategory() + ") | Кров: " + ClinicFormatter.FormatBloodType(BloodType) + " | Тел:" + ClinicFormatter.FormatPhone(Phone);
+        return "[" + Id + "] " + FullName + " | Вік: " + ClinicFormatter.FormatAge(Age) + " (" + GetAgeCategory() + ") | Кров: " + ClinicFormatter.FormatBloodType(BloodType) + " | Тел:" + ClinicFormatter.FormatPhone(Phone) + " | Email: " + Email;
     }
 }
