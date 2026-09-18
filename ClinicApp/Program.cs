@@ -1,11 +1,19 @@
 ﻿using ClinicApp;
 
-WorkSchedule morning = new WorkSchedule(8, 16);
-WorkSchedule evening = new WorkSchedule(14, 22);
+Console.WriteLine("=== Тест форматера ===");
+Console.WriteLine(ClinicFormatter.FormatBloodType(BloodType.APositive));
+Console.WriteLine(ClinicFormatter.FormatAge(1));
+Console.WriteLine(ClinicFormatter.FormatAge(3));
+Console.WriteLine(ClinicFormatter.FormatAge(11));
+Console.WriteLine(ClinicFormatter.FormatAge(21));
+Console.WriteLine(ClinicFormatter.FormatPhone("0501234567"));
 
-Console.WriteLine(morning.ToString());
-Console.WriteLine("morning.IsNow -> " + morning.IsNow);
+Console.WriteLine("\n=== Тест індексаторів ===");
+PatientManager pm = new PatientManager();
+pm.Add(new Patient("Іван", "Петренко", new DateTime(1985, 5, 12), BloodType.APositive, "0501234567"));
 
-Doctor doc = new Doctor("Олег", "Сидоренко", Speciality.Cardiology);
-doc.Schedule = evening;
-Console.WriteLine(doc.ToString());
+Patient? first = pm[0];
+if (first != null)
+{
+    Console.WriteLine("Знайдено через індексатор: " + first.ToString());
+}
