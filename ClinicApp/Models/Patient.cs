@@ -17,79 +17,31 @@ public class Patient
     public string FirstName
     {
         get => _firstName;
-        set
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                throw new ArgumentException("Ім'я не може бути порожнім.");
-            }
-            if (value.Length > 50)
-            {
-                throw new ArgumentException("Ім'я занадто довге (макс. 50 символів).");
-            }
-            _firstName = value;
-        }
+        set { ClinicValidator.ValidateName(value, "Ім'я"); _firstName = value; }
     }
 
     public string LastName
     {
         get => _lastName;
-        set
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                throw new ArgumentException("Прізвище не може бути порожнім.");
-            }
-            if (value.Length > 50)
-            {
-                throw new ArgumentException("Прізвище занадто довге (макс. 50 symbols).");
-            }
-            _lastName = value;
-        }
+        set { ClinicValidator.ValidateName(value, "Прізвище"); _lastName = value; }
     }
 
     public DateTime DateOfBirth
     {
         get => _dateOfBirth;
-        set
-        {
-            if (value > DateTime.Today)
-            {
-                throw new ArgumentOutOfRangeException(nameof(DateOfBirth), "Дата народження не може бути в майбутньому.");
-            }
-            if (value.Year < 1900)
-            {
-                throw new ArgumentOutOfRangeException(nameof(DateOfBirth), "Дата народження не може бути раніше 1900 року.");
-            }
-            _dateOfBirth = value;
-        }
+        set { ClinicValidator.ValidateDate(value, nameof(DateOfBirth)); _dateOfBirth = value; }
     }
 
     public string Phone
     {
         get => _phone;
-        set
-        {
-            if (value == null || value.Length != 10)
-            {
-                throw new ArgumentException("Телефон має містити рівно 10 цифр.");
-            }
-            for (int i = 0; i < value.Length; i++)
-            {
-                if (value[i] < '0' || value[i] > '9')
-                {
-                    throw new ArgumentException("Телефон має містити тільки цифри.");
-                }
-            }
-            _phone = value;
-        }
+        set { ClinicValidator.ValidatePhone(value); _phone = value; }
     }
 
     public BloodType BloodType { get; set; }
     public string Email { get; set; }
 
     public string FullName => FirstName + " " + LastName;
-
     public int Age
     {
         get

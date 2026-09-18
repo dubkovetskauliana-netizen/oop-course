@@ -1,4 +1,6 @@
-﻿namespace ClinicApp.Models;
+﻿using ClinicApp.Utils;
+
+namespace ClinicApp.Models;
 
 public struct WorkSchedule
 {
