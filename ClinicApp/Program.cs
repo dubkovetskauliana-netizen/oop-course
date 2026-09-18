@@ -1,36 +1,13 @@
 ﻿using ClinicApp;
 
-Console.WriteLine("=== Тест GrowablePatientManager ===");
-Console.WriteLine("Додаємо пацієнтів одного за одним ...");
+Patient p = new Patient("Іван", "Петренко", new DateTime(1985, 5, 12), BloodType.APositive, "0501234567");
+Doctor d = new Doctor("Олег", "Сидоренко", Speciality.Cardiology, "LIC-001", "0441234567");
+Appointment a = new Appointment(p.Id, d.Id, new DateTime(2027, 5, 9, 10, 0, 0), 30);
 
-GrowablePatientManager gpm = new GrowablePatientManager();
+Console.WriteLine(p.ToString());
+Console.WriteLine(d.ToString());
+Console.WriteLine(a.ToString());
 
-for (int i = 1; i <= 20; i++)
-{
-    gpm.Add(new Patient("Тест", "Пацієнт" + i));
-}
-
-Console.WriteLine("\nТест пошуку:");
-Patient? found1 = gpm.FindById(10);
-if (found1 != null)
-{
-    Console.WriteLine("FindById(10) -> " + found1.FullName);
-}
-else
-{
-    Console.WriteLine("FindById(10) -> не знайдено");
-}
-
-Patient? found2 = gpm.FindById(99);
-if (found2 != null)
-{
-    Console.WriteLine("FindById(99) -> " + found2.FullName);
-}
-else
-{
-    Console.WriteLine("FindById(99) -> не знайдено");
-}
-
-Console.WriteLine("\nПорівняння:");
-Console.WriteLine("  PatientManager:       100 місць (фіксовано)");
-Console.WriteLine("  GrowablePatientManager: " + gpm.Capacity + " місця (зросте при потребі)");
+Console.WriteLine("\nСкасовуємо запис:");
+a.Cancel("Пацієнт передумав");
+Console.WriteLine(a.ToString());

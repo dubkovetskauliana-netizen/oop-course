@@ -36,13 +36,12 @@ public class DoctorManager
         return null;
     }
 
-    public Doctor[] FindBySpeciality(string speciality)
+    public Doctor[] FindBySpeciality(Speciality speciality)
     {
-        string search = speciality.ToLower();
         int matches = 0;
         for (int i = 0; i < _count; i++)
         {
-            if (_doctors[i].Speciality.ToLower() == search)
+            if (_doctors[i].Speciality == speciality)
             {
                 matches++;
             }
@@ -52,7 +51,7 @@ public class DoctorManager
         int index = 0;
         for (int i = 0; i < _count; i++)
         {
-            if (_doctors[i].Speciality.ToLower() == search)
+            if (_doctors[i].Speciality == speciality)
             {
                 result[index] = _doctors[i];
                 index++;
@@ -140,7 +139,7 @@ public class DoctorManager
             bool isDuplicate = false;
             for (int j = 0; j < i; j++)
             {
-                if (_doctors[i].Speciality.ToLower() == _doctors[j].Speciality.ToLower())
+                if (_doctors[i].Speciality == _doctors[j].Speciality)
                 {
                     isDuplicate = true;
                     break;
@@ -152,7 +151,7 @@ public class DoctorManager
                 int specCount = 0;
                 for (int k = 0; k < _count; k++)
                 {
-                    if (_doctors[k].Speciality.ToLower() == _doctors[i].Speciality.ToLower())
+                    if (_doctors[k].Speciality == _doctors[i].Speciality)
                     {
                         specCount++;
                     }
