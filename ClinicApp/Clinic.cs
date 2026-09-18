@@ -1,4 +1,7 @@
-﻿namespace ClinicApp;
+﻿using ClinicApp.Managers;
+using ClinicApp.Models;
+
+namespace ClinicApp;
 
 public class Clinic
 {
@@ -41,10 +44,7 @@ public class Clinic
             int docAppointmentsCount = 0;
             for (int j = 0; j < upcoming.Length; j++)
             {
-                if (upcoming[j].DoctorId == allDoctors[i].Id)
-                {
-                    docAppointmentsCount++;
-                }
+                if (upcoming[j].DoctorId == allDoctors[i].Id) docAppointmentsCount++;
             }
             string docLine = "    " + allDoctors[i].FullName + " (" + allDoctors[i].Speciality + "): " + docAppointmentsCount + " записів";
             Console.WriteLine("│ " + docLine.PadRight(41) + "│");

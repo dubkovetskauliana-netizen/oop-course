@@ -1,4 +1,6 @@
-﻿namespace ClinicApp;
+﻿using ClinicApp.Enums;
+
+namespace ClinicApp.Models;
 
 public class Appointment
 {
@@ -12,15 +14,8 @@ public class Appointment
     public AppointmentStatus Status { get; private set; }
     public string Notes { get; private set; }
 
-    public DateTime EndsAt
-    {
-        get { return ScheduledAt.AddMinutes(DurationMinutes); }
-    }
-
-    public bool IsUpcoming
-    {
-        get { return ScheduledAt > DateTime.Now && Status == AppointmentStatus.Scheduled; }
-    }
+    public DateTime EndsAt => ScheduledAt.AddMinutes(DurationMinutes);
+    public bool IsUpcoming => ScheduledAt > DateTime.Now && Status == AppointmentStatus.Scheduled;
 
     public Appointment(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes = 30)
     {
@@ -56,14 +51,8 @@ public class Appointment
 
     public override string ToString()
     {
-        string result = "[" + Id + "] Пацієнт #" + PatientId + " -> Лікар #" + DoctorId + " | " +
-                       ScheduledAt.ToString("dd.MM.yyyy HH:mm") + "-" + EndsAt.ToString("HH:mm") + " | " + Status;
-
-        if (Notes.Length > 0)
-        {
-            result += " | " + Notes;
-        }
-
+        string result = "[" + Id + "] Пацієнт #" + PatientId + " -> Лікар #" + DoctorId + " | " + ScheduledAt.ToString("dd.MM.yyyy HH:mm") + "-" + EndsAt.ToString("HH:mm") + " | " + Status;
+        if (Notes.Length > 0) result += " | " + Notes;
         return result;
     }
 }

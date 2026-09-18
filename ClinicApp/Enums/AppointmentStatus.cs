@@ -1,4 +1,4 @@
-﻿namespace ClinicApp;
+﻿namespace ClinicApp.Enums;
 
 public enum AppointmentStatus
 {
@@ -6,4 +6,3 @@ public enum AppointmentStatus
     Cancelled,
     Completed
 }
-

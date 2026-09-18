@@ -1,4 +1,7 @@
-﻿namespace ClinicApp;
+﻿using ClinicApp.Enums;
+using ClinicApp.Utils;
+
+namespace ClinicApp.Models;
 
 public class Doctor
 {
@@ -12,33 +15,14 @@ public class Doctor
     public string Phone { get; set; }
     public WorkSchedule Schedule { get; set; }
 
-    public string FullName
-    {
-        get { return FirstName + " " + LastName; }
-    }
+    public string FullName => FirstName + " " + LastName;
+    public int WorkingHoursPerDay => Schedule.HoursPerDay;
+    public string WorkSchedule => Schedule.Display;
+    public bool IsAvailableNow => Schedule.IsNow;
 
-    public int WorkingHoursPerDay
-    {
-        get { return Schedule.HoursPerDay; }
-    }
+    public Doctor() : this("Невідомий", "Лікар", Speciality.General) { }
 
-    public string WorkSchedule
-    {
-        get { return Schedule.Display; }
-    }
-
-    public bool IsAvailableNow
-    {
-        get { return Schedule.IsNow; }
-    }
-
-    public Doctor() : this("Невідомий", "Лікар", Speciality.General)
-    {
-    }
-
-    public Doctor(string firstName, string lastName, Speciality speciality) : this(firstName, lastName, speciality, "LIC-000", "0000000000")
-    {
-    }
+    public Doctor(string firstName, string lastName, Speciality speciality) : this(firstName, lastName, speciality, "LIC-000", "0000000000") { }
 
     public Doctor(string firstName, string lastName, Speciality speciality, string licenseNumber, string phone)
     {
@@ -51,10 +35,7 @@ public class Doctor
         Schedule = new WorkSchedule(8, 17);
     }
 
-    public bool CanAcceptAt(int hour)
-    {
-        return Schedule.Contains(hour);
-    }
+    public bool CanAcceptAt(int hour) => Schedule.Contains(hour);
 
     public override string ToString()
     {

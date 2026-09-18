@@ -1,4 +1,7 @@
-﻿namespace ClinicApp;
+﻿using ClinicApp.Enums;
+using ClinicApp.Utils;
+
+namespace ClinicApp.Models;
 
 public class Patient
 {
@@ -12,10 +15,7 @@ public class Patient
     public string Phone { get; set; }
     public string Email { get; set; }
 
-    public string FullName
-    {
-        get { return FirstName + " " + LastName; }
-    }
+    public string FullName => FirstName + " " + LastName;
 
     public int Age
     {
@@ -23,26 +23,16 @@ public class Patient
         {
             DateTime today = DateTime.Today;
             int age = today.Year - DateOfBirth.Year;
-            if (DateOfBirth.Date > today.AddYears(-age))
-            {
-                age--;
-            }
+            if (DateOfBirth.Date > today.AddYears(-age)) age--;
             return age;
         }
     }
 
-    public bool IsAdult
-    {
-        get { return Age >= 18; }
-    }
+    public bool IsAdult => Age >= 18;
 
-    public Patient() : this("Невідомий", "Пацієнт", new DateTime(2000, 1, 1), BloodType.Unknown, "0000000000")
-    {
-    }
+    public Patient() : this("Невідомий", "Пацієнт", new DateTime(2000, 1, 1), BloodType.Unknown, "0000000000") { }
 
-    public Patient(string firstName, string lastName) : this(firstName, lastName, new DateTime(2000, 1, 1), BloodType.Unknown, "0000000000")
-    {
-    }
+    public Patient(string firstName, string lastName) : this(firstName, lastName, new DateTime(2000, 1, 1), BloodType.Unknown, "0000000000") { }
 
     public Patient(string firstName, string lastName, DateTime dob, BloodType bloodType, string phone)
     {
@@ -57,15 +47,8 @@ public class Patient
 
     public string GetAgeCategory()
     {
-        int age = Age;
-        if (age < 18)
-        {
-            return "дитина";
-        }
-        if (age < 60)
-        {
-            return "дорослий";
-        }
+        if (Age < 18) return "дитина";
+        if (Age < 60) return "дорослий";
         return "літній";
     }
 
