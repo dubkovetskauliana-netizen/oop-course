@@ -1,20 +1,16 @@
 ﻿using ClinicApp;
 
-DoctorManager dm = new DoctorManager();
+Appointment a1 = new Appointment(1, 1, new DateTime(2026, 5, 9, 10, 0, 0), 30);
+Appointment a2 = new Appointment(2, 2, new DateTime(2026, 5, 9, 11, 0, 0), 45);
+Appointment a3 = new Appointment(3, 3, new DateTime(2026, 5, 10, 9, 0, 0), 20);
 
-Doctor d1 = new Doctor("Олег", "Сидоренко", "Кардіологія", "LIC-001", "0441234567");
-d1.WorkEndHour = 16;
+Console.WriteLine(a1.ToString());
+Console.WriteLine(a2.ToString());
+Console.WriteLine(a3.ToString());
 
-Doctor d2 = new Doctor("Наталія", "Мороз", "Неврологии", "LIC-002", "0442345678");
-d2.WorkStartHour = 9;
-d2.WorkEndHour = 18;
+Console.WriteLine("\n// Після Cancel та Complete:");
+a1.Cancel("Пацієнт не зміг прийти");
+a2.Complete();
 
-Doctor d3 = new Doctor("Андрій", "Власенко", "Педіатрія", "LIC-003", "0443456789");
-
-dm.Add(d1);
-dm.Add(d2);
-dm.Add(d3);
-
-dm.DisplayAll();
-Console.WriteLine();
-dm.DisplayStats();
+Console.WriteLine(a1.ToString());
+Console.WriteLine(a2.ToString());
