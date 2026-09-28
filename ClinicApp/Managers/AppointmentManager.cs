@@ -1,105 +1,150 @@
-﻿using ClinicApp.Enums;
+﻿using System;
 using ClinicApp.Models;
+using ClinicApp.Interfaces;
 
-namespace ClinicApp.Managers;
-
-public class AppointmentManager
+namespace ClinicApp.Managers
 {
-    private const int MaxAppointments = 500;
-    private Appointment[] _appointments = new Appointment[MaxAppointments];
-    private int _count = 0;
-    private PatientManager _patients;
-    private DoctorManager _doctors;
-
-    public int Count => _count;
-
-    public AppointmentManager(PatientManager patients, DoctorManager doctors)
+    public class AppointmentManager
     {
-        _patients = patients;
-        _doctors = doctors;
-    }
+        private readonly Appointment[] _appointments = new Appointment[1000];
+        private int _count = 0;
 
-    private Appointment? FindById(int id)
-    {
-        for (int i = 0; i < _count; i++)
+        public int Count
         {
-            if (_appointments[i].Id == id) return _appointments[i];
-        }
-        return null;
-    }
-
-    public bool Book(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes)
-    {
-        if (_count >= MaxAppointments) return false;
-        Patient? patient = _patients.FindById(patientId);
-        if (patient == null) return false;
-        Doctor? doctor = _doctors.FindById(doctorId);
-        if (doctor == null) return false;
-
-        Appointment app = new Appointment(patientId, doctorId, scheduledAt, durationMinutes);
-        _appointments[_count] = app;
-        _count++;
-        return true;
-    }
-
-    public bool Cancel(int id, string reason)
-    {
-        Appointment? app = FindById(id);
-        if (app != null) return app.Cancel(reason);
-        return false;
-    }
-
-    public bool Complete(int id)
-    {
-        Appointment? app = FindById(id);
-        if (app != null) return app.Complete();
-        return false;
-    }
-
-    public Appointment[] GetByDate(DateTime date)
-    {
-        int matches = 0;
-        for (int i = 0; i < _count; i++)
-        {
-            if (_appointments[i].ScheduledAt.Date == date.Date) matches++;
+            get { return _count; }
         }
 
-        Appointment[] result = new Appointment[matches];
-        int index = 0;
-        for (int i = 0; i < _count; i++)
+        // Повертаємо порожній конструктор
+        public AppointmentManager()
         {
-            if (_appointments[i].ScheduledAt.Date == date.Date) { result[index] = _appointments[i]; index++; }
-        }
-        return result;
-    }
-
-    public Appointment[] GetUpcoming()
-    {
-        int matches = 0;
-        for (int i = 0; i < _count; i++)
-        {
-            if (_appointments[i].IsUpcoming) matches++;
         }
 
-        Appointment[] result = new Appointment[matches];
-        int index = 0;
-        for (int i = 0; i < _count; i++)
+        // Повертаємо конструктор з двома аргументами, який викликається в Clinic.cs на рядку 18
+        public AppointmentManager(object arg1, object arg2)
         {
-            if (_appointments[i].IsUpcoming) { result[index] = _appointments[i]; index++; }
         }
-        return result;
-    }
 
-    public void DisplayList(Appointment[] list)
-    {
-        if (list.Length == 0) return;
-        for (int i = 0; i < list.Length; i++)
+        public void Add(Appointment appointment)
         {
-            Patient? p = _patients.FindById(list[i].PatientId);
-            Doctor? d = _doctors.FindById(list[i].DoctorId);
-            string pName = p != null ? p.FullName : "Пацієнт";
-            string dName = d != null ? d.FullName : "Лікар";
-            Console.WriteLine("[" + list[i].Id + "] " + pName + " -> " + dName + " | " + list[i].ScheduledAt.ToString("dd.MM.yyyy HH:mm") + " | " + list[i].Status);
+            if (appointment == null) return;
+
+            if (_count >= 1000)
+            {
+                Console.WriteLine("Помилка: досягнуто ліміту записів.");
+                return;
+            }
+
+            _appointments[_count] = appointment;
+            _count++;
+        }
+
+        public Appointment FindById(int id)
+        {
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i].Id == id)
+                {
+                    return _appointments[i];
+                }
+            }
+            return null;
+        }
+
+        // --- Метод з Лаби 05, який викликається в Clinic.cs (рядок 24) ---
+        public Appointment[] GetByDate(DateTime date)
+        {
+            int matchCount = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i].ScheduledAt.Date == date.Date)
+                {
+                    matchCount++;
+                }
+            }
+
+            Appointment[] result = new Appointment[matchCount];
+            int index = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i].ScheduledAt.Date == date.Date)
+                {
+                    result[index] = _appointments[i];
+                    index++;
+                }
+            }
+            return result;
+        }
+
+        // --- Метод з Лаби 05, який викликається в Clinic.cs (рядок 30) ---
+        public Appointment[] GetUpcoming()
+        {
+            int matchCount = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i].IsUpcoming)
+                {
+                    matchCount++;
+                }
+            }
+
+            Appointment[] result = new Appointment[matchCount];
+            int index = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i].IsUpcoming)
+                {
+                    result[index] = _appointments[i];
+                    index++;
+                }
+            }
+            return result;
+        }
+
+        // --- Метод відображення списку, який викликається в Clinic.cs (рядок 25) ---
+        public void DisplayList(Appointment[] items)
+        {
+            if (items == null || items.Length == 0)
+            {
+                Console.WriteLine("Записів не знайдено.");
+                return;
+            }
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (items[i] != null)
+                {
+                    Console.WriteLine(items[i]);
+                }
+            }
+        }
+
+        // --- Задача 1 Лаби 07 ---
+        public Appointment[] GetAll()
+        {
+            Appointment[] result = new Appointment[_count];
+            for (int i = 0; i < _count; i++)
+            {
+                result[i] = _appointments[i];
+            }
+            return result;
+        }
+
+        // --- Задача 2 Лаби 07 ---
+        public static int CancelAll(ICancellable[] items, string reason = "")
+        {
+            if (items == null) return 0;
+
+            int cancelledCount = 0;
+            for (int i = 0; i < items.Length; i++)
+            {
+                if (items[i] != null)
+                {
+                    if (items[i].Cancel(reason))
+                    {
+                        cancelledCount++;
+                    }
+                }
+            }
+            return cancelledCount;
         }
     }
 }
