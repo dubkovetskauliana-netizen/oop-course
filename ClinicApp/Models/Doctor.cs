@@ -1,9 +1,11 @@
-﻿using ClinicApp.Enums;
+﻿using System;
+using ClinicApp.Enums;
 using ClinicApp.Utils;
+using ClinicApp.Interfaces;
 
 namespace ClinicApp.Models;
 
-public class Doctor
+public class Doctor : ISchedulable
 {
     private static int _nextId = 1;
 
@@ -46,6 +48,33 @@ public class Doctor
     public string WorkSchedule => Schedule.Display;
     public bool IsAvailableNow => Schedule.IsNow;
 
+    // --- Реалізація інтерфейсу ISchedulable ---
+    public bool CanSchedule(DateTime at)
+    {
+        // Викликаємо ваш готовий метод перевірки, щоб уникнути дублювання логіки
+        return CanAcceptAt(at.Hour);
+    }
+
+    public DateTime[] GetAvailableSlots(DateTime date, int slotCount)
+    {
+        // Перевіряємо slotCount через ваш валідатор з Лаби 05
+        ClinicValidator.ValidatePositive(slotCount, nameof(slotCount));
+
+        // Кількість слотів обмежена меншим із двох чисел: замовленням або тривалістю робочого дня лікаря
+        int finalCount = slotCount < Schedule.HoursPerDay ? slotCount : Schedule.HoursPerDay;
+
+        DateTime[] slots = new DateTime[finalCount];
+        DateTime baseDate = date.Date; // беремо дату без часу
+
+        for (int i = 0; i < finalCount; i++)
+        {
+            // Починаємо з часу старту лікаря (Schedule.Start) і додаємо по одній годині
+            slots[i] = baseDate.AddHours(Schedule.Start + i);
+        }
+
+        return slots;
+    }
+
     public Doctor() : this("Невідомий", "Лікар", Speciality.General) { }
 
     public Doctor(string firstName, string lastName, Speciality speciality) : this(firstName, lastName, speciality, "LIC-000", "0000000000") { }
@@ -66,6 +95,6 @@ public class Doctor
     public override string ToString()
     {
         string status = IsAvailableNow ? "доступний зараз" : "не в робочий час";
-        return "[" + Id + "] " + FullName + " | " + ClinicFormatter.FormatSpeciality(Speciality) + " | " + LicenseNumber + " | Тел:" + ClinicFormatter.FormatPhone(Phone) + " | " + WorkSchedule + " (" + WorkingHoursPerDay + " год) | " + status;
+        return "[" + Id + "] " + FullName + " | " + ClinicFormatter.FormatSpeciality(Speciality) + " | " + LicenseNumber + " | Тел:" + ClinicFormatter.FormatPhone(Phone) + " | " + WorkSchedule + " (" + WorkingHoursPerDay + " god) | " + status;
     }
 }
