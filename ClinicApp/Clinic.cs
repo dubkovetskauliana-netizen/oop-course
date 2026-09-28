@@ -14,8 +14,6 @@ namespace ClinicApp
             Patients = new PatientManager();
             Doctors = new DoctorManager();
             Appointments = new AppointmentManager();
-
-            // Створюємо Billing строго після Appointments, як вимагає інструкція
             Billing = new BillingManager(Appointments);
         }
     }

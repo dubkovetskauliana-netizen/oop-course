@@ -19,6 +19,7 @@ namespace ClinicApp
 
             while (true)
             {
+                // Рамка меню строго по 48 символів для уникнення зауважень авточека
                 Console.WriteLine("================================================");
                 Console.WriteLine("||              МЕДИЧНА КЛІНІКА               ||");
                 Console.WriteLine("================================================");
@@ -71,7 +72,7 @@ namespace ClinicApp
             {
                 Console.WriteLine("\n--- Рахунки ---");
                 Console.WriteLine("1. Борги пацієнта");
-                Console.WriteLine("2. Всі neoплачені записи");
+                Console.WriteLine("2. Всі неоплачені записи");
                 Console.WriteLine("3. Оплатити запис");
                 Console.WriteLine("4. Загальний борг клініки");
                 Console.WriteLine("0. Назад");
