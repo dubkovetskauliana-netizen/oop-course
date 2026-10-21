@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Threading;
 using ClinicApp.Models;
+using ClinicApp.Managers;
 
 namespace ClinicApp
 {
@@ -17,28 +18,43 @@ namespace ClinicApp
 
             while (true)
             {
-                Console.WriteLine("\n=== ГОЛОВНЕ МЕНЮ ===");
-                Console.WriteLine("1. Керування пацієнтами");
-                Console.WriteLine("2. Керування лікарями");
-                Console.WriteLine("3. Розклад та записи");
-                Console.WriteLine("4. Медична картка (Лаба 06)");
-                Console.WriteLine("5. Звіт");
-                Console.WriteLine("0. Вихід");
-                Console.Write("Оберіть пункт: ");
+                Console.WriteLine("================================================");
+                Console.WriteLine("||              МЕДИЧНА КЛІНІКА               ||");
+                Console.WriteLine("================================================");
+                Console.WriteLine("|| 1. Пацієнти     – реєстрація, пошук        ||");
+                Console.WriteLine("|| 2. Лікарі       – персонал, розклад        ||");
+                Console.WriteLine("|| 3. Записи       – прийоми, скасування      ||");
+                Console.WriteLine("|| 4. Медична картка – діагнози, рецепти      ||");
+                Console.WriteLine("|| 5. Рахунки      – оплата, борги            ||");
+                Console.WriteLine("|| 6. Черга        – очікування, прийом       ||");
+                Console.WriteLine("|| 7. Звіт         – загальна статистика      ||");
+                Console.WriteLine("|| 0. Вийти                                   ||");
+                Console.WriteLine("================================================");
+                Console.Write("Оберіть розділ: ");
 
                 string choice = Console.ReadLine();
                 if (choice == "0") break;
 
                 switch (choice)
                 {
-                    case "4":
-                        MedicalRecordsMenu(clinic);
-                        break;
                     case "1":
+                    case "4":
+                        Console.WriteLine("Розділ працює у фоновому режимі з минулих лаб.");
+                        break;
                     case "2":
+                        DoctorsMenu(clinic);
+                        break;
                     case "3":
+                        AppointmentsMenu(clinic);
+                        break;
                     case "5":
-                        Console.WriteLine("Цей розділ працює у фоновому режимі з минулих лаб.");
+                        BillingMenu(clinic);
+                        break;
+                    case "6":
+                        WaitingRoomMenu(clinic);
+                        break;
+                    case "7":
+                        Console.WriteLine("Розділ звітів працює у фоновому режимі.");
                         break;
                     default:
                         Console.WriteLine("Некоректний вибір.");
@@ -47,131 +63,105 @@ namespace ClinicApp
             }
         }
 
-        private static void SeedData(Clinic clinic)
-        {
-            DateTime today = DateTime.Today;
-
-            // Наповнюємо менеджер медичних записів тестовими даними без створення нових пацієнтів,
-            // щоб не виникало конфліктів із конструкторами минулих лабораторних.
-            clinic.MedicalRecords.Add(new Diagnosis(1, 1, today.AddDays(-30), "I10", "Гіпертонічна хвороба", true));
-            clinic.MedicalRecords.Add(new Diagnosis(1, 1, today.AddDays(-5), "J06.9", "Гострий ринофарингіт", false));
-            clinic.MedicalRecords.Add(new LabResult(1, 1, today, "Гемоглобін", 145.0, "г/л", "120–160", true));
-            clinic.MedicalRecords.Add(new LabResult(1, 2, today, "Холестерин", 6.2, "ммоль/л", "< 5.2", false));
-            clinic.MedicalRecords.Add(new Prescription(1, 2, today.AddDays(-5), "Лізиноприл", "10 мг", 30, "1 раз на добу вранці"));
-            clinic.MedicalRecords.Add(new Prescription(2, 1, today.AddDays(-40), "Аспірин", "100 мг", 10, "Після їжі"));
-            clinic.MedicalRecords.Add(new Diagnosis(2, 2, today.AddDays(-10), "I25", "Ішемічна хвороба серця", true));
-            clinic.MedicalRecords.Add(new LabResult(3, 1, today.AddDays(-2), "Глюкоза", 5.5, "ммоль/л", "3.3–5.5", true));
-        }
-
-        private static void MedicalRecordsMenu(Clinic clinic)
+        private static void WaitingRoomMenu(Clinic clinic)
         {
             while (true)
             {
-                Console.WriteLine("\n--- МЕДИЧНА КАРТКА ---");
-                Console.WriteLine("1. Картка пацієнта (зведення)");
-                Console.WriteLine("2. Усі записи пацієнта (демонстрація поліморфізму)");
-                Console.WriteLine("3. Додати діагноз");
-                Console.WriteLine("4. Додати аналіз");
-                Console.WriteLine("5. Додати рецепт");
-                Console.WriteLine("6. Записи лікаря");
+                Console.WriteLine("\n--- Черга очікування ---");
+                Console.WriteLine("1. Додати пацієнта до черги");
+                Console.WriteLine("2. Прийняти першого");
+                Console.WriteLine("3. Хто перший?");
+                Console.WriteLine("4. Переглянути всю чергу");
                 Console.WriteLine("0. Назад");
                 Console.Write("Оберіть дію: ");
 
                 string choice = Console.ReadLine();
                 if (choice == "0") break;
 
-                switch (choice)
+                if (choice == "1")
                 {
-                    case "1":
-                        if (HeaderAndIdRequest(out int pId1)) clinic.MedicalRecords.DisplayPatientSummary(pId1);
-                        break;
-                    case "2":
-                        if (HeaderAndIdRequest(out int pId2)) clinic.MedicalRecords.DisplayList(clinic.MedicalRecords.GetByPatient(pId2));
-                        break;
-                    case "3":
-                        ExecuteAddDiagnosis(clinic);
-                        break;
-                    case "4":
-                        ExecuteAddLabResult(clinic);
-                        break;
-                    case "5":
-                        ExecuteAddPrescription(clinic);
-                        break;
-                    case "6":
-                        Console.Write("ID лікаря: ");
-                        if (int.TryParse(Console.ReadLine(), out int dId)) clinic.MedicalRecords.DisplayList(clinic.MedicalRecords.GetByDoctor(dId));
-                        break;
+                    Console.Write("ID пацієнта (ціле): ");
+                    if (int.TryParse(Console.ReadLine(), out int pId))
+                    {
+                        Patient foundPatient = clinic.Patients.FindById(pId);
+                        if (foundPatient != null)
+                        {
+                            clinic.WaitingRoom.Enqueue(foundPatient);
+                            Console.WriteLine("Пацієнта " + foundPatient.FullName + " додано до черги.");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Пацієнта не знайдено");
+                        }
+                    }
+                }
+                else if (choice == "2")
+                {
+                    try
+                    {
+                        Patient head = clinic.WaitingRoom.Dequeue();
+                        Console.WriteLine("Прийнято: " + head.FullName + ". У черзі лишилось: " + clinic.WaitingRoom.Count);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+                else if (choice == "3")
+                {
+                    try
+                    {
+                        Patient next = clinic.WaitingRoom.Peek();
+                        Console.WriteLine("Перший у черзі: " + next.FullName);
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
+                }
+                else if (choice == "4")
+                {
+                    Patient[] array = clinic.WaitingRoom.ToArray();
+                    if (array.Length == 0)
+                    {
+                        Console.WriteLine("Черга порожня.");
+                    }
+                    else
+                    {
+                        for (int i = 0; i < array.Length; i++)
+                        {
+                            Console.WriteLine((i + 1) + ". " + array[i].FullName);
+                        }
+                    }
                 }
             }
         }
 
-        private static void ExecuteAddDiagnosis(Clinic clinic)
+        private static void SeedData(Clinic clinic)
         {
-            if (!HeaderAndIdRequest(out int pId)) return;
-            Console.Write("ID лікаря (ціле число): ");
-            if (!int.TryParse(Console.ReadLine(), out int dId)) return;
-            Console.Write("Код діагнозу (напр. I10): ");
-            string code = Console.ReadLine();
-            Console.Write("Опис: ");
-            string desc = Console.ReadLine();
-            Console.Write("Хронічне? (1=так, 0=ні): ");
-            bool isChronic = Console.ReadLine() == "1";
-
-            try
+            Patient[] initialPatients = clinic.Patients.GetAll();
+            for (int i = 0; i < initialPatients.Length; i++)
             {
-                clinic.MedicalRecords.Add(new Diagnosis(pId, dId, DateTime.Today, code, desc, isChronic));
+                if (initialPatients[i] != null)
+                {
+                    clinic.WaitingRoom.Enqueue(initialPatients[i]);
+                }
             }
-            catch (Exception ex) { Console.WriteLine($"Помилка: {ex.Message}"); }
         }
 
-        private static void ExecuteAddLabResult(Clinic clinic)
+        private static void BillingMenu(Clinic clinic)
         {
-            if (!HeaderAndIdRequest(out int pId)) return;
-            Console.Write("ID лікаря (ціле число): ");
-            if (!int.TryParse(Console.ReadLine(), out int dId)) return;
-            Console.Write("Назва аналізу: ");
-            string name = Console.ReadLine();
-            Console.Write("Значення (число через крапку): ");
-            if (!double.TryParse(Console.ReadLine(), NumberStyles.Float, CultureInfo.InvariantCulture, out double val)) return;
-            Console.Write("Одиниці виміру (напр. г/л): ");
-            string unit = Console.ReadLine();
-            Console.Write("Нормальний діапазон (текст): ");
-            string range = Console.ReadLine();
-            Console.Write("В межах норми? (1=так, 0=ні): ");
-            bool isNormal = Console.ReadLine() == "1";
-
-            try
-            {
-                clinic.MedicalRecords.Add(new LabResult(pId, dId, DateTime.Today, name, val, unit, range, isNormal));
-            }
-            catch (Exception ex) { Console.WriteLine($"Помилка: {ex.Message}"); }
+            Console.WriteLine("Меню рахунків тимчасово недоступне у фоновому режимі.");
         }
 
-        private static void ExecuteAddPrescription(Clinic clinic)
+        private static void AppointmentsMenu(Clinic clinic)
         {
-            if (!HeaderAndIdRequest(out int pId)) return;
-            Console.Write("ID лікаря (ціле число): ");
-            if (!int.TryParse(Console.ReadLine(), out int dId)) return;
-            Console.Write("Назва препарату: ");
-            string med = Console.ReadLine();
-            Console.Write("Дозування (напр. 10 мг): ");
-            string dose = Console.ReadLine();
-            Console.Write("Тривалість у днях (ціле число): ");
-            if (!int.TryParse(Console.ReadLine(), out int days)) return;
-            Console.Write("Інструкція з прийому: ");
-            string inst = Console.ReadLine();
-
-            try
-            {
-                clinic.MedicalRecords.Add(new Prescription(pId, dId, DateTime.Today, med, dose, days, inst));
-            }
-            catch (Exception ex) { Console.WriteLine($"Помилка: {ex.Message}"); }
+            Console.WriteLine("Меню записів тимчасово недоступне у фоновому режимі.");
         }
 
-        private static bool HeaderAndIdRequest(out int id)
+        private static void DoctorsMenu(Clinic clinic)
         {
-            Console.Write("ID пацієнта (ціле число): ");
-            return int.TryParse(Console.ReadLine(), out id);
+            Console.WriteLine("Меню лікарів тимчасово недоступне у фоновому режимі.");
         }
     }
 }

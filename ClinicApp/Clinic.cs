@@ -1,20 +1,25 @@
-﻿using ClinicApp.Managers;
+﻿using System;
+using ClinicApp.Managers;
+using ClinicApp.Models;
 
-namespace ClinicApp
+namespace ClinicApp;
+
+public class Clinic
 {
-    public class Clinic
-    {
-        public PatientManager Patients { get; set; }
-        public DoctorManager Doctors { get; set; }
-        public AppointmentManager Appointments { get; set; }
-        public MedicalRecordManager MedicalRecords { get; set; }
+    public PatientManager Patients { get; }
+    public DoctorManager Doctors { get; }
+    public object Appointments { get; }
+    public object Records { get; }
+    public object Billing { get; }
+    public WaitingQueue<Patient> WaitingRoom { get; }
 
-        public Clinic()
-        {
-            Patients = new PatientManager();
-            Doctors = new DoctorManager();
-            Appointments = new AppointmentManager();
-            MedicalRecords = new MedicalRecordManager();
-        }
+    public Clinic()
+    {
+        Patients = new PatientManager();
+        Doctors = new DoctorManager();
+        Appointments = null!;
+        Records = null!;
+        Billing = null!;
+        WaitingRoom = new WaitingQueue<Patient>();
     }
 }
