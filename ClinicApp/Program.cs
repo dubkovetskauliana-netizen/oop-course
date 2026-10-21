@@ -88,7 +88,6 @@ namespace ClinicApp
 
         private static void SeedData(Clinic clinic)
         {
-            // Переписано через методи менеджера відповідно до специфікації Задачі 3
             clinic.Appointments.Book(1, 1, DateTime.Today.AddHours(9));
             clinic.Appointments.BookUrgent(2, 2, DateTime.Today.AddHours(11), "Біль у грудях");
             clinic.Appointments.BookSpecialist(3, 3, DateTime.Today.AddHours(12), "кардіологія", 60);
@@ -100,7 +99,7 @@ namespace ClinicApp
             {
                 Console.WriteLine("\n--- Рахунки ---");
                 Console.WriteLine("1. Борги пацієнта");
-                Console.WriteLine("2. Всі neoплачені записи");
+                Console.WriteLine("2. Всі неоплачені записи");
                 Console.WriteLine("3. Оплатити запис");
                 Console.WriteLine("4. Загальний борг клініки");
                 Console.WriteLine("0. Назад");
@@ -165,6 +164,7 @@ namespace ClinicApp
                 Console.WriteLine("\n--- Керування записами ---");
                 Console.WriteLine("1. Переглянути всі прийоми");
                 Console.WriteLine("8. Скасувати всі записи пацієнта");
+                Console.WriteLine("9. За типом прийому");
                 Console.WriteLine("0. Назад");
                 Console.Write("Оберіть дію: ");
 
@@ -174,6 +174,39 @@ namespace ClinicApp
                 if (choice == "1")
                 {
                     clinic.Appointments.DisplayList(clinic.Appointments.GetAll());
+                }
+                else if (choice == "9")
+                {
+                    Console.WriteLine("Оберіть:");
+                    Console.WriteLine("1. Термінові");
+                    Console.WriteLine("2. Консультації спеціаліста");
+                    Console.WriteLine("3. Звичайні");
+                    Console.Write("Оберіть: ");
+
+                    string typeChoice = Console.ReadLine();
+                    Appointment[] filtered = null;
+
+                    if (typeChoice == "1")
+                    {
+                        filtered = clinic.Appointments.GetUrgent();
+                    }
+                    else if (typeChoice == "2")
+                    {
+                        filtered = clinic.Appointments.GetSpecialist();
+                    }
+                    else if (typeChoice == "3")
+                    {
+                        filtered = clinic.Appointments.GetRegular();
+                    }
+
+                    if (filtered != null)
+                    {
+                        clinic.Appointments.DisplayList(filtered);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Некоректний вибір типу.");
+                    }
                 }
                 else if (choice == "8")
                 {
@@ -197,18 +230,15 @@ namespace ClinicApp
                     {
                         if (patientApps[i] != null && patientApps[i].PatientId == pId)
                         {
-                            // Додано явне приведення типів, щоб виправити помилку CS0266
                             cancellables[idx] = (ICancellable)patientApps[i];
                             idx++;
                         }
                     }
-
                     int cancelled = AppointmentManager.CancelAll(cancellables, reason);
                     Console.WriteLine($"Скасовано записів: {cancelled}");
                 }
             }
         }
-
         private static void DoctorsMenu(Clinic clinic)
         {
             while (true)
@@ -218,10 +248,8 @@ namespace ClinicApp
                 Console.WriteLine("5. Вільні години лікаря");
                 Console.WriteLine("0. Назад");
                 Console.Write("Оберіть дію: ");
-
                 string choice = Console.ReadLine();
                 if (choice == "0") break;
-
                 if (choice == "1")
                 {
                     clinic.Doctors.DisplayAll();

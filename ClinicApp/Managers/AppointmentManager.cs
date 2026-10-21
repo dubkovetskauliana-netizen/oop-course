@@ -64,6 +64,79 @@ namespace ClinicApp.Managers
             return InternalAddAndCheck(appointment);
         }
 
+        // Задача 4: Методи відбору за типом (двопрохідний патерн з оператором is)
+        public Appointment[] GetUrgent()
+        {
+            int matchCount = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is UrgentAppointment)
+                {
+                    matchCount++;
+                }
+            }
+
+            Appointment[] result = new Appointment[matchCount];
+            int index = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is UrgentAppointment)
+                {
+                    result[index] = _appointments[i];
+                    index++;
+                }
+            }
+            return result;
+        }
+
+        public Appointment[] GetSpecialist()
+        {
+            int matchCount = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is SpecialistAppointment)
+                {
+                    matchCount++;
+                }
+            }
+
+            Appointment[] result = new Appointment[matchCount];
+            int index = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is SpecialistAppointment)
+                {
+                    result[index] = _appointments[i];
+                    index++;
+                }
+            }
+            return result;
+        }
+
+        public Appointment[] GetRegular()
+        {
+            int matchCount = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is RegularAppointment)
+                {
+                    matchCount++;
+                }
+            }
+
+            Appointment[] result = new Appointment[matchCount];
+            int index = 0;
+            for (int i = 0; i < _count; i++)
+            {
+                if (_appointments[i] is RegularAppointment)
+                {
+                    result[index] = _appointments[i];
+                    index++;
+                }
+            }
+            return result;
+        }
+
         public Appointment FindById(int id)
         {
             for (int i = 0; i < _count; i++)
@@ -124,6 +197,16 @@ namespace ClinicApp.Managers
             return result;
         }
 
+        // Задача 4: Відображення одного запису (використовує віртуальні методи базового класу)
+        public void DisplayAppointment(Appointment appointment)
+        {
+            if (appointment != null)
+            {
+                Console.WriteLine(appointment);
+            }
+        }
+
+        // Задача 4: Оновлений метод виведення списку (жодного if за типом об'єкта!)
         public void DisplayList(Appointment[] items)
         {
             if (items == null || items.Length == 0)
@@ -135,7 +218,7 @@ namespace ClinicApp.Managers
             {
                 if (items[i] != null)
                 {
-                    Console.WriteLine(items[i]);
+                    DisplayAppointment(items[i]);
                 }
             }
         }
