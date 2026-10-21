@@ -14,28 +14,54 @@ namespace ClinicApp.Managers
             get { return _count; }
         }
 
-        // Повертаємо порожній конструктор
         public AppointmentManager()
         {
         }
 
-        // Повертаємо конструктор з двома аргументами, який викликається в Clinic.cs на рядку 18
         public AppointmentManager(object arg1, object arg2)
         {
         }
 
-        public void Add(Appointment appointment)
+        // Приватний допоміжний метод, щоб не копіювати логіку перевірок і додавання
+        private bool InternalAddAndCheck(Appointment appointment)
         {
-            if (appointment == null) return;
+            if (appointment == null) return false;
 
             if (_count >= 1000)
             {
                 Console.WriteLine("Помилка: досягнуто ліміту записів.");
-                return;
+                return false;
             }
 
             _appointments[_count] = appointment;
             _count++;
+            return true;
+        }
+
+        public void Add(Appointment appointment)
+        {
+            InternalAddAndCheck(appointment);
+        }
+
+        // Задача 3: Метод створює RegularAppointment замість звичайного Appointment
+        public bool Book(int patientId, int doctorId, DateTime scheduledAt)
+        {
+            RegularAppointment appointment = new RegularAppointment(patientId, doctorId, scheduledAt);
+            return InternalAddAndCheck(appointment);
+        }
+
+        // Задача 3: Метод для створення термінового прийому
+        public bool BookUrgent(int patientId, int doctorId, DateTime scheduledAt, string urgencyNote = "", int durationMinutes = 30)
+        {
+            UrgentAppointment appointment = new UrgentAppointment(patientId, doctorId, scheduledAt, urgencyNote, durationMinutes);
+            return InternalAddAndCheck(appointment);
+        }
+
+        // Задача 3: Метод для створення прийому спеціаліста
+        public bool BookSpecialist(int patientId, int doctorId, DateTime scheduledAt, string topic = "", int durationMinutes = 45)
+        {
+            SpecialistAppointment appointment = new SpecialistAppointment(patientId, doctorId, scheduledAt, topic, durationMinutes);
+            return InternalAddAndCheck(appointment);
         }
 
         public Appointment FindById(int id)
@@ -50,7 +76,6 @@ namespace ClinicApp.Managers
             return null;
         }
 
-        // --- Метод з Лаби 05, який викликається в Clinic.cs (рядок 24) ---
         public Appointment[] GetByDate(DateTime date)
         {
             int matchCount = 0;
@@ -75,7 +100,6 @@ namespace ClinicApp.Managers
             return result;
         }
 
-        // --- Метод з Лаби 05, який викликається в Clinic.cs (рядок 30) ---
         public Appointment[] GetUpcoming()
         {
             int matchCount = 0;
@@ -100,7 +124,6 @@ namespace ClinicApp.Managers
             return result;
         }
 
-        // --- Метод відображення списку, який викликається в Clinic.cs (рядок 25) ---
         public void DisplayList(Appointment[] items)
         {
             if (items == null || items.Length == 0)
@@ -117,7 +140,6 @@ namespace ClinicApp.Managers
             }
         }
 
-        // --- Задача 1 Лаби 07 ---
         public Appointment[] GetAll()
         {
             Appointment[] result = new Appointment[_count];
@@ -128,7 +150,6 @@ namespace ClinicApp.Managers
             return result;
         }
 
-        // --- Задача 2 Лаби 07 ---
         public static int CancelAll(ICancellable[] items, string reason = "")
         {
             if (items == null) return 0;
