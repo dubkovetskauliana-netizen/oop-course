@@ -22,6 +22,9 @@ public class Appointment
 
     public string Notes { get; set; }
 
+    // Задача 5: Множник знижки (за замовчуванням 1.0m, тобто без знижки)
+    public decimal DiscountMultiplier { get; set; } = 1.0m;
+
     public int DurationMinutes
     {
         get => _durationMinutes;
@@ -64,9 +67,10 @@ public class Appointment
         return false;
     }
 
+    // Задача 5: Враховуємо множник знижки у базовій вартості
     public virtual decimal GetCost()
     {
-        return DurationMinutes * 10;
+        return (DurationMinutes * 10) * DiscountMultiplier;
     }
 
     public virtual string GetDescription()

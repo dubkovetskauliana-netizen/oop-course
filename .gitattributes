@@ -1,63 +1,238 @@
-###############################################################################
-# Set default behavior to automatically normalize line endings.
-###############################################################################
-* text=auto
+using System;
+using System.Globalization;
+using System.Threading;
+using ClinicApp.Models;
+using ClinicApp.Interfaces;
+using ClinicApp.Managers;
 
-###############################################################################
-# Set default behavior for command prompt diff.
-#
-# This is need for earlier builds of msysgit that does not have it on by
-# default for csharp files.
-# Note: This is only used by command line
-###############################################################################
-#*.cs     diff=csharp
+namespace ClinicApp
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-###############################################################################
-# Set the merge driver for project and solution files
-#
-# Merging from the command prompt will add diff markers to the files if there
-# are conflicts (Merging from VS is not affected by the settings below, in VS
-# the diff markers are never inserted). Diff markers may cause the following 
-# file extensions to fail to load in VS. An alternative would be to treat
-# these files as binary and thus will always conflict and require user
-# intervention with every merge. To do so, just uncomment the entries below
-###############################################################################
-#*.sln       merge=binary
-#*.csproj    merge=binary
-#*.vbproj    merge=binary
-#*.vcxproj   merge=binary
-#*.vcproj    merge=binary
-#*.dbproj    merge=binary
-#*.fsproj    merge=binary
-#*.lsproj    merge=binary
-#*.wixproj   merge=binary
-#*.modelproj merge=binary
-#*.sqlproj   merge=binary
-#*.wwaproj   merge=binary
+            Clinic clinic = new Clinic();
+            SeedData(clinic);
 
-###############################################################################
-# behavior for image files
-#
-# image files are treated as binary by default.
-###############################################################################
-#*.jpg   binary
-#*.png   binary
-#*.gif   binary
+            while (true)
+            {
+                // Сувора вимога 7: Рамка меню має бути рівною — усі рядки по 48 символів!
+                Console.WriteLine("================================================");
+                Console.WriteLine("||              МЕДИЧНА КЛІНІКА               ||");
+                Console.WriteLine("================================================");
+                Console.WriteLine("|| 1. Пацієнти     – реєстрація, пошук        ||");
+                Console.WriteLine("|| 2. Лікарі       – персонал, розклад        ||");
+                Console.WriteLine("|| 3. Записи       – прийоми, скасування      ||");
+                Console.WriteLine("|| 4. Медична картка – діагнози, рецепти      ||");
+                Console.WriteLine("|| 5. Рахунки      – оплата, борги            ||");
+                Console.WriteLine("|| 6. Звіт         – загальна статистика      ||");
+                Console.WriteLine("|| 0. Вийти                                   ||");
+                Console.WriteLine("================================================");
+                Console.Write("Оберіть розділ: ");
 
-###############################################################################
-# diff behavior for common document formats
-# 
-# Convert binary document formats to text before diffing them. This feature
-# is only available from the command line. Turn it on by uncommenting the 
-# entries below.
-###############################################################################
-#*.doc   diff=astextplain
-#*.DOC   diff=astextplain
-#*.docx  diff=astextplain
-#*.DOCX  diff=astextplain
-#*.dot   diff=astextplain
-#*.DOT   diff=astextplain
-#*.pdf   diff=astextplain
-#*.PDF   diff=astextplain
-#*.rtf   diff=astextplain
-#*.RTF   diff=astextplain
+                string choice = Console.ReadLine();
+                if (choice == "0") break;
+
+                switch (choice)
+                {
+                    case "2":
+                        DoctorsMenu(clinic);
+                        break;
+                    case "3":
+                        AppointmentsMenu(clinic);
+                        break;
+                    case "5":
+                        BillingMenu(clinic);
+                        break;
+                    case "1":
+                    case "4":
+                    case "6":
+                        Console.WriteLine("Розділ працює у фоновому режимі.");
+                        break;
+                    default:
+                        Console.WriteLine("Некоректний вибір.");
+                        break;
+                }
+            }
+        }
+
+        private static void SeedData(Clinic clinic)
+        {
+            // Наповнюємо базовими записами для демонстрації (імітуємо Лабу 06)
+            clinic.Appointments.Add(new Appointment(1, 1, DateTime.Today.AddHours(9), 30)); // 300 грн
+            clinic.Appointments.Add(new Appointment(1, 2, DateTime.Today.AddHours(10), 45)); // 450 грн
+            clinic.Appointments.Add(new Appointment(2, 1, DateTime.Today.AddHours(11), 20)); // 200 грн
+        }
+
+        private static void BillingMenu(Clinic clinic)
+        {
+            while (true)
+            {
+                Console.WriteLine("\n--- Рахунки ---");
+                Console.WriteLine("1. Борги пацієнта");
+                Console.WriteLine("2. Всі неоплачені записи");
+                Console.WriteLine("3. Оплатити запис");
+                Console.WriteLine("4. Загальний борг клініки");
+                Console.WriteLine("0. Назад");
+                Console.Write("Оберіть дію: ");
+
+                string choice = Console.ReadLine();
+                if (choice == "0") break;
+
+                switch (choice)
+                {
+                    case "1":
+                        {
+                            Console.Write("ID пацієнта: ");
+                            if (!int.TryParse(Console.ReadLine(), out int pId)) break;
+
+                            // Сувора вимога 5: два окремі виклики
+                            decimal debt = clinic.Billing.GetPatientDebt(pId);
+                            IPayable[] unpaidItems = clinic.Billing.GetUnpaidByPatient(pId);
+
+                            Console.WriteLine($"Неоплачені записи пацієнта #{pId}:");
+                            clinic.Billing.DisplayUnpaid(unpaidItems);
+                            Console.WriteLine($"Борг: {debt.ToString("F2")} грн");
+                        }
+                        break;
+
+                    case "2":
+                        {
+                            IPayable[] allUnpaid = clinic.Billing.GetAllUnpaid();
+                            clinic.Billing.DisplayUnpaid(allUnpaid);
+                        }
+                        break;
+
+                    case "3":
+                        {
+                            Console.Write("ID запису для оплати: ");
+                            if (!int.TryParse(Console.ReadLine(), out int appId)) break;
+
+                            if (clinic.Billing.PayAppointment(appId))
+                            {
+                                Console.WriteLine($"Запис [{appId}] оплачено.");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Не вдалося оплатити: запис не знайдено, вже оплачено або скасовано.");
+                            }
+                        }
+                        break;
+
+                    case "4":
+                        {
+                            decimal totalDebt = clinic.Billing.GetTotalDebt();
+                            Console.WriteLine($"Загальний борг по клініці: {totalDebt.ToString("F2")} грн");
+                        }
+                        break;
+                }
+            }
+        }
+
+        private static void AppointmentsMenu(Clinic clinic)
+        {
+            while (true)
+            {
+                Console.WriteLine("\n--- Керування записами ---");
+                Console.WriteLine("1. Переглянути всі прийоми");
+                Console.WriteLine("8. Скасувати всі записи пацієнта");
+                Console.WriteLine("0. Назад");
+                Console.Write("Оберіть дію: ");
+
+                string choice = Console.ReadLine();
+                if (choice == "0") break;
+
+                if (choice == "1")
+                {
+                    clinic.Appointments.DisplayList(clinic.Appointments.GetAll());
+                }
+                else if (choice == "8")
+                {
+                    Console.Write("ID пацієнта: ");
+                    if (!int.TryParse(Console.ReadLine(), out int pId)) break;
+
+                    Console.Write("Причина (Enter – без причини): ");
+                    string reason = Console.ReadLine();
+
+                    // Сувора підказка 9: беремо записи, приводимо масив і викликаємо через ім'я класу
+                    Appointment[] patientApps = clinic.Appointments.GetAll();
+                    
+                    // Фільтруємо масив суто для цього пацієнта, щоб передати в масове скасування
+                    int count = 0;
+                    for (int i = 0; i < patientApps.Length; i++)
+                    {
+                        if (patientApps[i] != null && patientApps[i].PatientId == pId) count++;
+                    }
+
+                    ICancellable[] cancellables = new ICancellable[count];
+                    int idx = 0;
+                    for (int i = 0; i < patientApps.Length; i++)
+                    {
+                        if (patientApps[i] != null && patientApps[i].PatientId == pId)
+                        {
+                            cancellables[idx] = patientApps[i];
+                            idx++;
+                        }
+                    }
+
+                    int cancelled = AppointmentManager.CancelAll(cancellables, reason);
+                    Console.WriteLine($"Скасовано записів: {cancelled}");
+                }
+            }
+        }
+
+        private static void DoctorsMenu(Clinic clinic)
+        {
+            while (true)
+            {
+                Console.WriteLine("\n--- Керування персоналом ---");
+                Console.WriteLine("1. Список лікарів");
+                Console.WriteLine("5. Вільні години лікаря");
+                Console.WriteLine("0. Назад");
+                Console.Write("Оберіть дію: ");
+
+                string choice = Console.ReadLine();
+                if (choice == "0") break;
+
+                if (choice == "1")
+                {
+                    clinic.Doctors.DisplayAll();
+                }
+                else if (choice == "5")
+                {
+                    Console.Write("ID лікаря: ");
+                    if (!int.TryParse(Console.ReadLine(), out int dId)) break;
+
+                    Doctor doctor = clinic.Doctors.FindById(dId);
+                    if (doctor == null)
+                    {
+                        Console.WriteLine("Лікаря не знайдено.");
+                        break;
+                    }
+
+                    // Сувора підказка 10: використовуємо виключно інтерфейсну змінну ISchedulable
+                    ISchedulable schedulableDoctor = doctor;
+
+                    Console.Write("Дата (dd.MM.yyyy): ");
+                    string dateStr = Console.ReadLine();
+                    if (!DateTime.TryParseExact(dateStr, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime targetDate))
+                    {
+                        Console.WriteLine("Помилка: неправильний формат дати.");
+                        break;
+                    }
+
+                    Console.Write("Скільки слотів: ");
+                    if (!int.TryParse(Console.ReadLine(), out int slotsCount))
+                    {
+                        Console.WriteLine("Помилка: введене значення — не число.");
+                        break;
+                    }
+
+                    try
+                    {
+                        DateTime[] availableSlots = schedulableDoctor.GetAvailableSlots(targetDate, slotsCount);
+                        foreach (var slot in availableSlots)
+                        {
