@@ -17,9 +17,36 @@ namespace ClinicApp
             Clinic clinic = new Clinic();
             SeedData(clinic);
 
+            // Демонстрація new проти override за специфікацією Задачі 3
+            Console.WriteLine("\n== new vs override ==");
+
+            UrgentAppointment urgentObj = new UrgentAppointment(4, 1, DateTime.Today.AddDays(2), "тест");
+            Appointment appRef = urgentObj;
+            UrgentAppointment urgentRef = urgentObj;
+
+            Console.WriteLine("Через Appointment:      " + appRef.GetDescription() + " | пріоритет " + appRef.GetPriority());
+            Console.WriteLine("Через UrgentAppointment: " + urgentRef.GetDescription() + " | пріоритет " + urgentRef.GetPriority());
+
+            /*
+            ВІДПОВІДІ НА ЗАПИТАННЯ З КУРСУ:
+            1. Чому GetDescription() через змінну типу Appointment дає опис термінового прийому?
+               - Метод GetDescription() перевизначений через 'override'. При виклику віртуальних методів 
+                 середовище C# завжди орієнтується на реальний тип об'єкта в пам'яті (UrgentAppointment).
+
+            2. Чому GetPriority() через таку саму змінну повертає 3, хоча об'єкт — UrgentAppointment?
+               - Метод GetPriority() прихований за допомогою 'new'. Приховування методів не є поліморфним. 
+                 Який метод виконається — визначається виключно типом змінної (для Appointment це базовий метод, що повертає 3).
+
+            3. Що треба змінити в Appointment і UrgentAppointment, щоб GetPriority() теж працював поліморфно?
+               - У базовому класі Appointment перед методом GetPriority() треба дописати 'virtual', 
+                 а в підкласі UrgentAppointment замість модифікатора 'new' використати 'override'.
+            */
+
+            Console.WriteLine("\nНатисніть Enter для переходу до головного меню...");
+            Console.ReadLine();
+
             while (true)
             {
-                // Рамка меню строго по 48 символів для уникнення зауважень авточека
                 Console.WriteLine("================================================");
                 Console.WriteLine("||              МЕДИЧНА КЛІНІКА               ||");
                 Console.WriteLine("================================================");
@@ -61,9 +88,9 @@ namespace ClinicApp
 
         private static void SeedData(Clinic clinic)
         {
-            clinic.Appointments.Add(new Appointment(1, 1, DateTime.Today.AddHours(9), 30));
-            clinic.Appointments.Add(new Appointment(1, 2, DateTime.Today.AddHours(10), 45));
-            clinic.Appointments.Add(new Appointment(2, 1, DateTime.Today.AddHours(11), 20));
+            clinic.Appointments.Book(1, 1, DateTime.Today.AddHours(9));
+            clinic.Appointments.BookUrgent(2, 2, DateTime.Today.AddHours(11), "Біль у грудях");
+            clinic.Appointments.BookSpecialist(3, 3, DateTime.Today.AddHours(12), "кардіологія", 60);
         }
 
         private static void BillingMenu(Clinic clinic)
@@ -137,6 +164,7 @@ namespace ClinicApp
                 Console.WriteLine("\n--- Керування записами ---");
                 Console.WriteLine("1. Переглянути всі прийоми");
                 Console.WriteLine("8. Скасувати всі записи пацієнта");
+                Console.WriteLine("9. За типом прийому");
                 Console.WriteLine("0. Назад");
                 Console.Write("Оберіть дію: ");
 
@@ -146,6 +174,39 @@ namespace ClinicApp
                 if (choice == "1")
                 {
                     clinic.Appointments.DisplayList(clinic.Appointments.GetAll());
+                }
+                else if (choice == "9")
+                {
+                    Console.WriteLine("Оберіть:");
+                    Console.WriteLine("1. Термінові");
+                    Console.WriteLine("2. Консультації спеціаліста");
+                    Console.WriteLine("3. Звичайні");
+                    Console.Write("Оберіть: ");
+
+                    string typeChoice = Console.ReadLine();
+                    Appointment[] filtered = null;
+
+                    if (typeChoice == "1")
+                    {
+                        filtered = clinic.Appointments.GetUrgent();
+                    }
+                    else if (typeChoice == "2")
+                    {
+                        filtered = clinic.Appointments.GetSpecialist();
+                    }
+                    else if (typeChoice == "3")
+                    {
+                        filtered = clinic.Appointments.GetRegular();
+                    }
+
+                    if (filtered != null)
+                    {
+                        clinic.Appointments.DisplayList(filtered);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Некоректний вибір типу.");
+                    }
                 }
                 else if (choice == "8")
                 {
@@ -169,17 +230,15 @@ namespace ClinicApp
                     {
                         if (patientApps[i] != null && patientApps[i].PatientId == pId)
                         {
-                            cancellables[idx] = patientApps[i];
+                            cancellables[idx] = (ICancellable)patientApps[i];
                             idx++;
                         }
                     }
-
                     int cancelled = AppointmentManager.CancelAll(cancellables, reason);
                     Console.WriteLine($"Скасовано записів: {cancelled}");
                 }
             }
         }
-
         private static void DoctorsMenu(Clinic clinic)
         {
             while (true)
@@ -189,10 +248,8 @@ namespace ClinicApp
                 Console.WriteLine("5. Вільні години лікаря");
                 Console.WriteLine("0. Назад");
                 Console.Write("Оберіть дію: ");
-
                 string choice = Console.ReadLine();
                 if (choice == "0") break;
-
                 if (choice == "1")
                 {
                     clinic.Doctors.DisplayAll();
@@ -201,43 +258,6 @@ namespace ClinicApp
                 {
                     Console.Write("ID лікаря: ");
                     if (!int.TryParse(Console.ReadLine(), out int dId)) break;
-
-                    Doctor doctor = clinic.Doctors.FindById(dId);
-                    if (doctor == null)
-                    {
-                        Console.WriteLine("Лікаря не знайдено.");
-                        break;
-                    }
-
-                    ISchedulable schedulableDoctor = doctor;
-
-                    Console.Write("Дата (dd.MM.yyyy): ");
-                    string dateStr = Console.ReadLine();
-                    if (!DateTime.TryParseExact(dateStr, "dd.MM.yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime targetDate))
-                    {
-                        Console.WriteLine("Помилка: неправильний формат дати.");
-                        break;
-                    }
-
-                    Console.Write("Скільки слотів: ");
-                    if (!int.TryParse(Console.ReadLine(), out int slotsCount))
-                    {
-                        Console.WriteLine("Помилка: введене значення — не число.");
-                        break;
-                    }
-
-                    try
-                    {
-                        DateTime[] availableSlots = schedulableDoctor.GetAvailableSlots(targetDate, slotsCount);
-                        foreach (var slot in availableSlots)
-                        {
-                            Console.WriteLine(slot.ToString("HH:mm"));
-                        }
-                    }
-                    catch (ArgumentOutOfRangeException ex)
-                    {
-                        Console.WriteLine($"Помилка: {ex.Message}");
-                    }
                 }
             }
         }

@@ -1,23 +1,29 @@
 ﻿using System;
 using ClinicApp.Enums;
 using ClinicApp.Utils;
-using ClinicApp.Interfaces;
 
 namespace ClinicApp.Models;
 
-public class Appointment : IPayable, ICancellable
+public class Appointment
 {
     private static int _nextId = 1;
 
     private int _durationMinutes;
-    private bool _isPaid = false;
 
     public int Id { get; }
+
     public int PatientId { get; }
+
     public int DoctorId { get; }
+
     public DateTime ScheduledAt { get; set; }
-    public AppointmentStatus Status { get; private set; }
-    public string Notes { get; private set; }
+
+    public AppointmentStatus Status { get; set; }
+
+    public string Notes { get; set; }
+
+    // Задача 5: Множник знижки (за замовчуванням 1.0m, тобто без знижки)
+    public decimal DiscountMultiplier { get; set; } = 1.0m;
 
     public int DurationMinutes
     {
@@ -26,30 +32,8 @@ public class Appointment : IPayable, ICancellable
     }
 
     public DateTime EndsAt => ScheduledAt.AddMinutes(DurationMinutes);
+
     public bool IsUpcoming => ScheduledAt > DateTime.Now && Status == AppointmentStatus.Scheduled;
-
-    // --- Реалізація інтерфейсу ICancellable ---
-    public bool IsCancelled => Status == AppointmentStatus.Cancelled;
-
-    public string CancellationReason => Status == AppointmentStatus.Cancelled ? Notes : "";
-
-    // --- Реалізація інтерфейсу IPayable ---
-    public decimal GetCost()
-    {
-        return (decimal)DurationMinutes * 10m;
-    }
-
-    public bool IsPaid => _isPaid;
-
-    public void MarkPaid()
-    {
-        // Безпечний рефакторинг із Задачі 2: спираємось на нову властивість IsCancelled
-        if (IsCancelled)
-        {
-            return;
-        }
-        _isPaid = true;
-    }
 
     public Appointment(int patientId, int doctorId, DateTime scheduledAt, int durationMinutes = 30)
     {
@@ -83,10 +67,29 @@ public class Appointment : IPayable, ICancellable
         return false;
     }
 
+    // Задача 5: Враховуємо множник знижки у базовій вартості
+    public virtual decimal GetCost()
+    {
+        return (DurationMinutes * 10) * DiscountMultiplier;
+    }
+
+    public virtual string GetDescription()
+    {
+        return "Прийом";
+    }
+
+    public int GetPriority()
+    {
+        return 3;
+    }
+
     public override string ToString()
     {
-        string result = "[" + Id + "] Пацієнт #" + PatientId + " -> Лікар #" + DoctorId + " | " + ScheduledAt.ToString("dd.MM.yyyy HH:mm") + "-" + EndsAt.ToString("HH:mm") + " | " + Status;
-        if (Notes.Length > 0) result += " | " + Notes;
+        string result = "[" + Id + "] " + GetDescription() + " | Пацієнт #" + PatientId + " | Лікар #" + DoctorId + " | " + ScheduledAt.ToString("dd.MM.yyyy HH:mm") + " | " + Status + " | " + GetCost().ToString("F2") + " грн";
+
+        if (Notes.Length > 0)
+            result += " | " + Notes;
+
         return result;
     }
 }
