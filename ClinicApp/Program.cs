@@ -108,7 +108,7 @@ namespace ClinicApp
                 string choice = Console.ReadLine();
                 if (choice == "0") break;
 
-                switch (choice)
+                if (choice == "1")
                 {
                     case "1":
                         {

@@ -1,6 +1,10 @@
-﻿using ClinicApp.Managers;
+﻿using System;
+using ClinicApp.Managers;
+using ClinicApp.Models;
 
-namespace ClinicApp
+namespace ClinicApp;
+
+public class Clinic
 {
     public class Clinic
     {
