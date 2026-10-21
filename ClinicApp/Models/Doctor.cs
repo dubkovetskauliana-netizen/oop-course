@@ -3,7 +3,8 @@ using ClinicApp.Utils;
 
 namespace ClinicApp.Models;
 
-public class Doctor
+public class Doctor : ClinicApp.Interfaces.IIdentifiable
+
 {
     private static int _nextId = 1;
 
