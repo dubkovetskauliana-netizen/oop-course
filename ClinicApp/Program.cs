@@ -90,7 +90,7 @@ class Program
                         TreatmentPlan newPlan = FormBuilder.Build<TreatmentPlan>();
                         if (clinic.TreatmentPlans.Add(newPlan))
                         {
-                            Console.WriteLine($"План лікування успішно створено! ID: {newPlan.Id}");
+                            Console.WriteLine("План лікування успішно створено!");
                         }
                     }
                     break;
@@ -116,18 +116,9 @@ class Program
                         if (int.TryParse(Console.ReadLine(), out int id))
                         {
                             TreatmentPlan plan = clinic.TreatmentPlans.GetById(id);
-                            if (plan == null)
-                            {
-                                Console.WriteLine("План не знайдено");
-                            }
-                            else if (!plan.Activate())
-                            {
-                                Console.WriteLine("Перехід неможливий");
-                            }
-                            else
-                            {
-                                Console.WriteLine("План успішно активовано!");
-                            }
+                            if (plan == null) Console.WriteLine("План не знайдено");
+                            else if (!plan.Activate()) Console.WriteLine("Перехід неможливий");
+                            else Console.WriteLine("План успішно активовано!");
                         }
                     }
                     break;
@@ -138,18 +129,9 @@ class Program
                         if (int.TryParse(Console.ReadLine(), out int id))
                         {
                             TreatmentPlan plan = clinic.TreatmentPlans.GetById(id);
-                            if (plan == null)
-                            {
-                                Console.WriteLine("План не знайдено");
-                            }
-                            else if (!plan.Complete())
-                            {
-                                Console.WriteLine("Перехід неможливий");
-                            }
-                            else
-                            {
-                                Console.WriteLine("План успішно завершено!");
-                            }
+                            if (plan == null) Console.WriteLine("План не знайдено");
+                            else if (!plan.Complete()) Console.WriteLine("Перехід неможливий");
+                            else Console.WriteLine("План успішно завершено!");
                         }
                     }
                     break;
@@ -160,18 +142,9 @@ class Program
                         if (int.TryParse(Console.ReadLine(), out int id))
                         {
                             TreatmentPlan plan = clinic.TreatmentPlans.GetById(id);
-                            if (plan == null)
-                            {
-                                Console.WriteLine("План не знайдено");
-                            }
-                            else if (!plan.Cancel())
-                            {
-                                Console.WriteLine("Перехід неможливий");
-                            }
-                            else
-                            {
-                                Console.WriteLine("План успішно скасовано!");
-                            }
+                            if (plan == null) Console.WriteLine("План не знайдено");
+                            else if (!plan.Cancel()) Console.WriteLine("Перехід неможливий");
+                            else Console.WriteLine("План скасовано.");
                         }
                     }
                     break;

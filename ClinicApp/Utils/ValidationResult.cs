@@ -18,4 +18,12 @@ public class ValidationResult
             _errors.Add(error);
         }
     }
+
+    public void Print()
+    {
+        foreach (var error in _errors)
+        {
+            Console.WriteLine($"[!] {error}");
+        }
+    }
 }
