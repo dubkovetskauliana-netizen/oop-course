@@ -1,18 +1,36 @@
-﻿using ClinicApp.Enums;
+﻿using ClinicApp.Attributes;
+using ClinicApp.Enums;
 
 namespace ClinicApp.Models;
 
 public class TreatmentPlan
 {
-    public int Id { get; set; }
+    private static int _idCounter = 0;
+
+    public int Id { get; }
+
+    [MinValue(1, "Patient ID is required.")]
     public int PatientId { get; set; }
+
+    [Required("Diagnosis cannot be empty.")]
+    [MaxLength(200, "Diagnosis must not exceed 200 characters.")]
     public string Diagnosis { get; set; }
+
+    [MinValue(1, "Duration must be at least 1 day.")]
     public int DurationDays { get; set; }
-    public TreatmentStatus Status { get; set; } = TreatmentStatus.Created;
+
+    public TreatmentStatus Status { get; private set; }
+
+    public TreatmentPlan()
+    {
+        _idCounter++;
+        Id = _idCounter;
+        Status = TreatmentStatus.Planned;
+    }
 
     public bool Activate()
     {
-        if (Status == TreatmentStatus.Created)
+        if (Status == TreatmentStatus.Planned)
         {
             Status = TreatmentStatus.Active;
             return true;
@@ -32,7 +50,7 @@ public class TreatmentPlan
 
     public bool Cancel()
     {
-        if (Status == TreatmentStatus.Created || Status == TreatmentStatus.Active)
+        if (Status != TreatmentStatus.Completed)
         {
             Status = TreatmentStatus.Cancelled;
             return true;
