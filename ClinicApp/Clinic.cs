@@ -2,9 +2,7 @@
 using ClinicApp.Managers;
 using ClinicApp.Models;
 
-namespace ClinicApp;
-
-public class Clinic
+namespace ClinicApp
 {
     public class Clinic
     {
@@ -12,6 +10,7 @@ public class Clinic
         public DoctorManager Doctors { get; set; }
         public AppointmentManager Appointments { get; set; }
         public BillingManager Billing { get; }
+        public AnalyticsManager Analytics { get; }
 
         public Clinic()
         {
@@ -19,6 +18,7 @@ public class Clinic
             Doctors = new DoctorManager();
             Appointments = new AppointmentManager();
             Billing = new BillingManager(Appointments);
+            Analytics = new AnalyticsManager(Appointments, Doctors, Patients);
         }
     }
 }

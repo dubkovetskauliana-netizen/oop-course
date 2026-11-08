@@ -1,10 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using ClinicApp.Models;
 
-namespace oop_course.ClinicApp.Comparators
+namespace ClinicApp.Comparators
 {
-    internal class PatientStatsByLastVisit
+    public class PatientStatsByLastVisit : IComparer<PatientStats>
     {
+        public int Compare(PatientStats x, PatientStats y)
+        {
+            if (ReferenceEquals(x, y)) return 0;
+            if (x == null) return -1;
+            if (y == null) return 1;
+
+            return y.LastVisitDate.CompareTo(x.LastVisitDate);
+        }
     }
 }

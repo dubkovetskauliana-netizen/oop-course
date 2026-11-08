@@ -29,7 +29,7 @@ namespace ClinicApp.Models
         }
 
         public override string ToString()
-        {
+        {=
             string dateStr = LastAppointmentDate == DateTime.MinValue
                 ? "Немає прийомів"
                 : LastAppointmentDate.ToString("yyyy-MM-dd");

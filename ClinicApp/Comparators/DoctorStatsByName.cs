@@ -1,10 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using ClinicApp.Models;
 
-namespace oop_course.ClinicApp.Comparators
+namespace ClinicApp.Comparators
 {
-    internal class DoctorStatsByName
+    public class DoctorStatsByName : IComparer<DoctorStats>
     {
+        public int Compare(DoctorStats x, DoctorStats y)
+        {
+            if (ReferenceEquals(x, y)) return 0;
+            if (x == null) return -1;
+            if (y == null) return 1;
+
+            return string.Compare(x.FullName, y.FullName, StringComparison.CurrentCulture);
+        }
     }
 }
