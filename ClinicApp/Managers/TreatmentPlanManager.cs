@@ -8,7 +8,6 @@ namespace ClinicApp.Managers;
 public class TreatmentPlanManager
 {
     private readonly List<TreatmentPlan> _plans = new List<TreatmentPlan>();
-    private int _nextId = 1;
 
     public bool Add(TreatmentPlan plan)
     {
@@ -17,10 +16,10 @@ public class TreatmentPlanManager
         ValidationResult validationResult = ModelValidator.Validate(plan);
         if (!validationResult.IsValid)
         {
+            validationResult.Print();
             return false;
         }
 
-        plan.Id = _nextId++;
         _plans.Add(plan);
         return true;
     }
