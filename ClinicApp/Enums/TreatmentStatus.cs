@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace ClinicApp.Enums;
 
-namespace oop_course.ClinicApp.Enums
+public enum TreatmentStatus
 {
-    internal class TreatmentStatus
-    {
-    }
+    Created,
+    Active,
+    Completed,
+    Cancelled
 }

@@ -1,285 +1,189 @@
-﻿using System;
+﻿using ClinicApp.Models;
+using ClinicApp.Utils;
+using System;
 using System.Globalization;
 using System.Threading;
-using ClinicApp.Models;
-using ClinicApp.Interfaces;
-using ClinicApp.Managers;
-using ClinicApp.Comparators;
 
-namespace ClinicApp
+namespace ClinicApp;
+
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+        Clinic clinic = new Clinic();
+
+        while (true)
         {
-            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
+            Console.WriteLine("================================================");
+            Console.WriteLine("||              МЕДИЧНА КЛІНІКА               ||");
+            Console.WriteLine("================================================");
+            Console.WriteLine("|| 1. Пацієнти     – реєстрація, пошук        ||");
+            Console.WriteLine("|| 2. Лікарі       – персонал, розклад        ||");
+            Console.WriteLine("|| 3. Записи       – прийоми, скасування      ||");
+            Console.WriteLine("|| 4. Медична картка – діагнози, рецепти      ||");
+            Console.WriteLine("|| 5. Рахунки      – оплата, борги            ||");
+            Console.WriteLine("|| 6. Звіт         – загальна статистика      ||");
+            Console.WriteLine("|| 9. Плани лікування – рефлексія, атрибути   ||");
+            Console.WriteLine("|| 0. Вийти                                   ||");
+            Console.WriteLine("================================================");
+            Console.Write("Оберіть розділ: ");
 
-            Clinic clinic = new Clinic();
-            SeedData(clinic);
+            string choice = Console.ReadLine();
+            if (choice == "0") break;
 
-            // Демонстрація new проти override за специфікацією Задачі 3
-            Console.WriteLine("\n== new vs override ==");
-
-            UrgentAppointment urgentObj = new UrgentAppointment(4, 1, DateTime.Today.AddDays(2), "тест");
-            Appointment appRef = urgentObj;
-            UrgentAppointment urgentRef = urgentObj;
-
-            Console.WriteLine("Через Appointment:      " + appRef.GetDescription() + " | пріоритет " + appRef.GetPriority());
-            Console.WriteLine("Через UrgentAppointment: " + urgentRef.GetDescription() + " | пріоритет " + urgentRef.GetPriority());
-
-            Console.WriteLine("\nНатисніть Enter для переходу до головного меню...");
-            Console.ReadLine();
-
-            while (true)
+            switch (choice)
             {
-                Console.WriteLine("================================================");
-                Console.WriteLine("||              МЕДИЧНА КЛІНІКА               ||");
-                Console.WriteLine("================================================");
-                Console.WriteLine("|| 1. Пацієнти     – реєстрація, пошук        ||");
-                Console.WriteLine("|| 2. Лікарі       – персонал, розклад        ||");
-                Console.WriteLine("|| 3. Записи       – прийоми, скасування      ||");
-                Console.WriteLine("|| 4. Медична картка – діагнози, рецепти      ||");
-                Console.WriteLine("|| 5. Рахунки      – оплата, борги            ||");
-                Console.WriteLine("|| 6. Звіт         – загальна статистика      ||");
-                Console.WriteLine("|| 8. Аналітика    – рейтинги та звіти        ||");
-                Console.WriteLine("|| 0. Вийти                                   ||");
-                Console.WriteLine("================================================");
-                Console.Write("Оберіть розділ: ");
-
-                string choice = Console.ReadLine();
-                if (choice == "0") break;
-
-                switch (choice)
-                {
-                    case "2":
-                        DoctorsMenu(clinic);
-                        break;
-                    case "3":
-                        AppointmentsMenu(clinic);
-                        break;
-                    case "5":
-                        BillingMenu(clinic);
-                        break;
-                    case "8":
-                        AnalyticsMenu(clinic);
-                        break;
-                    case "1":
-                    case "4":
-                    case "6":
-                        Console.WriteLine("Розділ працює у фоновому режимі з минулих лаб.");
-                        break;
-                    default:
-                        Console.WriteLine("Некоректний вибір.");
-                        break;
-                }
+                case "9":
+                    TreatmentPlansMenu(clinic);
+                    break;
+                case "1":
+                case "2":
+                case "3":
+                case "4":
+                case "5":
+                case "6":
+                    Console.WriteLine("Цей розділ працює у стандартному режимі.");
+                    break;
+                default:
+                    Console.WriteLine("Некоректний вибір.");
+                    break;
             }
         }
+    }
 
-        private static void SeedData(Clinic clinic)
+    private static void TreatmentPlansMenu(Clinic clinic)
+    {
+        while (true)
         {
-            clinic.Appointments.Book(1, 1, DateTime.Today.AddHours(9));
-            clinic.Appointments.BookUrgent(2, 2, DateTime.Today.AddHours(11), "Біль у грудях");
-            clinic.Appointments.BookSpecialist(3, 3, DateTime.Today.AddHours(12), "кардіологія", 60);
-        }
+            Console.WriteLine("\n--- Плани лікування ---");
+            Console.WriteLine("1. Показати всі плани");
+            Console.WriteLine("2. Додати план лікування");
+            Console.WriteLine("3. Плани пацієнта");
+            Console.WriteLine("4. Активувати план");
+            Console.WriteLine("5. Завершити план");
+            Console.WriteLine("6. Скасувати план");
+            Console.WriteLine("7. Інформація про тип TreatmentPlan");
+            Console.WriteLine("8. Назад");
+            Console.Write("Оберіть дію: ");
 
-        private static void BillingMenu(Clinic clinic)
-        {
-            while (true)
+            string choice = Console.ReadLine();
+            if (choice == "8") break;
+
+            switch (choice)
             {
-                Console.WriteLine("\n--- Рахунки ---");
-                Console.WriteLine("1. Борги пацієнта");
-                Console.WriteLine("2. Всі neoплачені записи");
-                Console.WriteLine("3. Оплатити запис");
-                Console.WriteLine("4. Загальний борг клініки");
-                Console.WriteLine("0. Назад");
-                Console.Write("Оберіть дію: ");
-
-                string choice = Console.ReadLine();
-                if (choice == "0") break;
-
-                switch (choice)
-                {
-                    case "1":
+                case "1":
+                    {
+                        TreatmentPlan[] allPlans = clinic.TreatmentPlans.GetAll();
+                        if (allPlans.Length == 0) Console.WriteLine("Планів лікування ще немає.");
+                        foreach (var p in allPlans)
                         {
-                            Console.Write("ID пацієнта (ціле): ");
-                            if (!int.TryParse(Console.ReadLine(), out int pId)) break;
-
-                            decimal debt = clinic.Billing.GetPatientDebt(pId);
-                            IPayable[] unpaidItems = clinic.Billing.GetUnpaidByPatient(pId);
-
-                            Console.WriteLine($"Неоплачені записи пацієнта #{pId}:");
-                            clinic.Billing.DisplayUnpaid(unpaidItems);
-                            Console.WriteLine($"Борг: {debt.ToString("F2")} грн");
+                            Console.WriteLine($"ID: {p.Id} | Пацієнт ID: {p.PatientId} | Діагноз: {p.Diagnosis} | Статус: {p.Status}");
                         }
-                        break;
+                    }
+                    break;
 
-                    case "2":
+                case "2":
+                    {
+                        TreatmentPlan newPlan = FormBuilder.Build<TreatmentPlan>();
+                        if (clinic.TreatmentPlans.Add(newPlan))
                         {
-                            IPayable[] allUnpaid = clinic.Billing.GetAllUnpaid();
-                            clinic.Billing.DisplayUnpaid(allUnpaid);
+                            Console.WriteLine($"План лікування успішно створено! ID: {newPlan.Id}");
                         }
-                        break;
+                    }
+                    break;
 
-                    case "3":
+                case "3":
+                    {
+                        Console.Write("ID пацієнта: ");
+                        if (int.TryParse(Console.ReadLine(), out int pId))
                         {
-                            Console.Write("ID запису для оплати: ");
-                            if (!int.TryParse(Console.ReadLine(), out int appId)) break;
-
-                            if (clinic.Billing.PayAppointment(appId))
+                            TreatmentPlan[] pPlans = clinic.TreatmentPlans.GetByPatient(pId);
+                            if (pPlans.Length == 0) Console.WriteLine("У цього пацієнта немає планів.");
+                            foreach (var p in pPlans)
                             {
-                                Console.WriteLine($"Запис [{appId}] оплачено.");
+                                Console.WriteLine($"ID: {p.Id} | Діагноз: {p.Diagnosis} | Статус: {p.Status}");
+                            }
+                        }
+                    }
+                    break;
+
+                case "4":
+                    {
+                        Console.Write("ID плану: ");
+                        if (int.TryParse(Console.ReadLine(), out int id))
+                        {
+                            TreatmentPlan plan = clinic.TreatmentPlans.GetById(id);
+                            if (plan == null)
+                            {
+                                Console.WriteLine("План не знайдено");
+                            }
+                            else if (!plan.Activate())
+                            {
+                                Console.WriteLine("Перехід неможливий");
                             }
                             else
                             {
-                                Console.WriteLine("Не вдалося оплатити: запис не знайдено, вже оплачено або скасовано.");
+                                Console.WriteLine("План успішно активовано!");
                             }
                         }
-                        break;
-
-                    case "4":
-                        {
-                            decimal totalDebt = clinic.Billing.GetTotalDebt();
-                            Console.WriteLine($"Загальний борг по клініці: {totalDebt.ToString("F2")} грн");
-                        }
-                        break;
-                }
-            }
-        }
-
-        private static void AppointmentsMenu(Clinic clinic)
-        {
-            while (true)
-            {
-                Console.WriteLine("\n--- Керування записами ---");
-                Console.WriteLine("1. Переглянути всі прийоми");
-                Console.WriteLine("8. Скасувати всі записи пацієнта");
-                Console.WriteLine("0. Назад");
-                Console.Write("Оберіть дію: ");
-
-                string choice = Console.ReadLine();
-                if (choice == "0") break;
-
-                if (choice == "1")
-                {
-                    clinic.Appointments.DisplayList(clinic.Appointments.GetAll());
-                }
-                else if (choice == "8")
-                {
-                    Console.Write("ID пацієнта (ціле): ");
-                    if (!int.TryParse(Console.ReadLine(), out int pId)) break;
-
-                    Console.Write("Причина (Enter - без причини): ");
-                    string reason = Console.ReadLine();
-
-                    var patientApps = clinic.Appointments.GetAll();
-
-                    int count = 0;
-                    foreach (var app in patientApps)
-                    {
-                        if (app != null && app.PatientId == pId) count++;
                     }
+                    break;
 
-                    ICancellable[] cancellables = new ICancellable[count];
-                    int idx = 0;
-
-                    foreach (var app in patientApps)
+                case "5":
                     {
-                        if (app != null && app.PatientId == pId)
+                        Console.Write("ID плану: ");
+                        if (int.TryParse(Console.ReadLine(), out int id))
                         {
-                            cancellables[idx] = (ICancellable)app;
-                            idx++;
+                            TreatmentPlan plan = clinic.TreatmentPlans.GetById(id);
+                            if (plan == null)
+                            {
+                                Console.WriteLine("План не знайдено");
+                            }
+                            else if (!plan.Complete())
+                            {
+                                Console.WriteLine("Перехід неможливий");
+                            }
+                            else
+                            {
+                                Console.WriteLine("План успішно завершено!");
+                            }
                         }
                     }
+                    break;
 
-                    int cancelled = AppointmentManager.CancelAll(cancellables, reason);
-                    Console.WriteLine($"Скасовано записів: {cancelled}");
-                }
+                case "6":
+                    {
+                        Console.Write("ID плану: ");
+                        if (int.TryParse(Console.ReadLine(), out int id))
+                        {
+                            TreatmentPlan plan = clinic.TreatmentPlans.GetById(id);
+                            if (plan == null)
+                            {
+                                Console.WriteLine("План не знайдено");
+                            }
+                            else if (!plan.Cancel())
+                            {
+                                Console.WriteLine("Перехід неможливий");
+                            }
+                            else
+                            {
+                                Console.WriteLine("План успішно скасовано!");
+                            }
+                        }
+                    }
+                    break;
+
+                case "7":
+                    ModelValidator.PrintInfo(typeof(TreatmentPlan));
+                    break;
+
+                default:
+                    Console.WriteLine("Некоректний варіант.");
+                    break;
             }
-        }
-
-        private static void DoctorsMenu(Clinic clinic)
-        {
-            while (true)
-            {
-                Console.WriteLine("\n--- Керування персоналом ---");
-                Console.WriteLine("1. Список лікарів");
-                Console.WriteLine("0. Назад");
-                Console.Write("Оберіть дію: ");
-
-                string choice = Console.ReadLine();
-                if (choice == "0") break;
-
-                if (choice == "1")
-                {
-                    clinic.Doctors.DisplayAll();
-                }
-            }
-        }
-
-        private static void AnalyticsMenu(Clinic clinic)
-        {
-            Console.Clear();
-            Console.WriteLine("=== МОДУЛЬ АНАЛІТИКИ ===");
-            Console.WriteLine("1. Лікарі за навантаженням (IComparable)");
-            Console.WriteLine("2. Лікарі за алфавітом (DoctorStatsByName)");
-            Console.WriteLine("3. Лікарі за виручкою (DoctorStatsByRevenue)");
-            Console.WriteLine("4. Пацієнти за датою візиту (PatientStatsByLastVisit)");
-            Console.WriteLine("5. Пацієнти за витратами (PatientStatsBySpent)");
-            Console.Write("\nОберіть варіант: ");
-
-            string choice = Console.ReadLine();
-            Console.WriteLine("\n--- Результати аналітики ---");
-
-            if (choice == "1" || choice == "2" || choice == "3")
-            {
-                var statsEnumerable = clinic.Analytics.ComputeDoctorStats();
-
-                int size = 0;
-                foreach (var s in statsEnumerable) size++;
-
-                DoctorStats[] array = new DoctorStats[size];
-                int index = 0;
-                foreach (var s in statsEnumerable) array[index++] = s;
-
-                if (choice == "1")
-                {
-                    Array.Sort(array);
-                }
-                else if (choice == "2")
-                {
-                    Array.Sort(array, new DoctorStatsByName());
-                }
-                else if (choice == "3")
-                {
-                    Array.Sort(array, new DoctorStatsByRevenue());
-                }
-                foreach (var item in array) Console.WriteLine(item);
-            }
-            else if (choice == "4" || choice == "5")
-            {
-                var statsEnumerable = clinic.Analytics.ComputePatientStats();
-                int size = 0;
-                foreach (var s in statsEnumerable) size++;
-                PatientStats[] array = new PatientStats[size];
-                int index = 0;
-                foreach (var s in statsEnumerable) array[index++] = s;
-                if (choice == "4")
-                {
-                    Array.Sort(array, new PatientStatsByLastVisit());
-                }
-                else if (choice == "5")
-                {
-                    Array.Sort(array, new PatientStatsBySpent());
-                }
-                foreach (var item in array) Console.WriteLine(item);
-            }
-            else
-            {
-                Console.WriteLine("Невірний вибір.");
-            }
-            Console.WriteLine("\nНатисніть будь-яку клавішу для повернення...");
-            Console.ReadKey();
         }
     }
 }

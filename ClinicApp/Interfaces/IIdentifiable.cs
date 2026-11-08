@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace oop_course.ClinicApp.Interfaces
+﻿namespace ClinicApp.Interfaces
 {
-    internal class IIdentifiable
+    public interface IIdentifiable
     {
+        int Id { get; }
     }
 }
