@@ -240,10 +240,11 @@ class Program
             Console.WriteLine("\n--- Файли ---");
             Console.WriteLine("1. Останні рядки лога");
             Console.WriteLine("2. Очистити лог");
-            Console.WriteLine("3. Назад");
+            Console.WriteLine("3. Експортувати всі звіти");
+            Console.WriteLine("4. Назад");
             Console.Write("Оберіть дію: ");
             string choice = Console.ReadLine();
-            if (choice == "3") break;
+            if (choice == "4") break;
             switch (choice)
             {
                 case "1":
@@ -275,6 +276,17 @@ class Program
                     {
                         clinic.Logger.Clear();
                         Console.WriteLine("Лог очищено.");
+                    }
+                    break;
+                case "3":
+                    {
+                        string[] paths = clinic.Exporter.ExportAll();
+                        Console.WriteLine("Звіти успішно експортовано:");
+                        for (int i = 0; i < paths.Length; i++)
+                        {
+                            Console.WriteLine(paths[i]);
+                        }
+                        clinic.Logger.LogInfo("Експортовано всі текстові звіти у теку reports.");
                     }
                     break;
                 default:
