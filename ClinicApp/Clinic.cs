@@ -13,6 +13,7 @@ public class Clinic
     public TreatmentPlanManager TreatmentPlans { get; set; }
     public ClinicLogger Logger { get; set; }
     public ClinicExporter Exporter { get; set; }
+    public SessionManager Session { get; set; }
 
     public Clinic()
     {
@@ -24,5 +25,6 @@ public class Clinic
         TreatmentPlans = new TreatmentPlanManager();
         Logger = new ClinicLogger();
         Exporter = new ClinicExporter(this);
+        Session = new SessionManager();
     }
 }
