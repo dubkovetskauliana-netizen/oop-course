@@ -222,7 +222,6 @@ class Program
                         }
                     }
                     break;
-
                 case "7":
                     ModelValidator.PrintInfo(typeof(TreatmentPlan));
                     break;
@@ -241,10 +240,11 @@ class Program
             Console.WriteLine("1. Останні рядки лога");
             Console.WriteLine("2. Очистити лог");
             Console.WriteLine("3. Експортувати всі звіти");
-            Console.WriteLine("4. Назад");
+            Console.WriteLine("4. Імпорт пацієнтів з CSV");
+            Console.WriteLine("5. Назад");
             Console.Write("Оберіть дію: ");
             string choice = Console.ReadLine();
-            if (choice == "4") break;
+            if (choice == "5") break;
             switch (choice)
             {
                 case "1":
@@ -287,6 +287,16 @@ class Program
                             Console.WriteLine(paths[i]);
                         }
                         clinic.Logger.LogInfo("Експортовано всі текстові звіти у теку reports.");
+                    }
+                    break;
+                case "4":
+                    {
+                        Console.Write("Шлях до CSV-файлу: ");
+                        string path = Console.ReadLine();
+                        CsvImporter importer = new CsvImporter();
+                        ImportResult result = importer.ImportPatients(clinic, path);
+                        result.Print();
+                        clinic.Logger.LogInfo($"Імпорт CSV завершено: імпортовано {result.Imported}, пропущено {result.Skipped}.");
                     }
                     break;
                 default:
