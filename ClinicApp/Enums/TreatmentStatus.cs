@@ -2,7 +2,7 @@
 
 public enum TreatmentStatus
 {
-    Created,
+    Planned,
     Active,
     Completed,
     Cancelled

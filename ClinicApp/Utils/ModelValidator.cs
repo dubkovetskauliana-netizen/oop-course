@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClinicApp.Attributes;
+using System;
 using System.Reflection;
 
 namespace ClinicApp.Utils;
@@ -10,7 +11,7 @@ public static class ModelValidator
         ValidationResult result = new ValidationResult();
         if (obj == null)
         {
-            result.AddError("Об'єкт не може бути null.");
+            result.AddError("Object cannot be null.");
             return result;
         }
 
@@ -22,24 +23,39 @@ public static class ModelValidator
             object value = prop.GetValue(obj);
             string propName = prop.Name;
 
-            if (propName == "Diagnosis" && (value == null || string.IsNullOrWhiteSpace(value.ToString())))
+            var requiredAttr = prop.GetCustomAttribute<RequiredAttribute>();
+            if (requiredAttr != null)
             {
-                result.AddError($"{propName}: Field is required.");
+                if (value == null || (value is string str && string.IsNullOrWhiteSpace(str)))
+                {
+                    result.AddError(string.IsNullOrEmpty(requiredAttr.ErrorMessage)
+                        ? $"{propName}: Field is required."
+                        : requiredAttr.ErrorMessage);
+                }
             }
 
-            if (propName == "Diagnosis" && value is string text && text.Length > 100)
+            var maxLengthAttr = prop.GetCustomAttribute<MaxLengthAttribute>();
+            if (maxLengthAttr != null && value is string text)
             {
-                result.AddError($"{propName}: Max length exceeded.");
+                if (text != null && text.Length > maxLengthAttr.Length)
+                {
+                    result.AddError(string.IsNullOrEmpty(maxLengthAttr.ErrorMessage)
+                        ? $"{propName}: Max length exceeded."
+                        : maxLengthAttr.ErrorMessage);
+                }
             }
 
-            if ((propName == "PatientId" || propName == "DurationDays") && value != null)
+            var minValueAttr = prop.GetCustomAttribute<MinValueAttribute>();
+            if (minValueAttr != null && value != null)
             {
                 try
                 {
                     double numValue = Convert.ToDouble(value);
-                    if (numValue < 1)
+                    if (numValue < minValueAttr.Min)
                     {
-                        result.AddError($"{propName}: Value is too small.");
+                        result.AddError(string.IsNullOrEmpty(minValueAttr.ErrorMessage)
+                            ? $"{propName}: Value is too small."
+                            : minValueAttr.ErrorMessage);
                     }
                 }
                 catch
@@ -55,27 +71,31 @@ public static class ModelValidator
     {
         if (type == null) return;
 
-        Console.WriteLine(type.Name);
+        Console.WriteLine($"Тип: {type.Name}");
         PropertyInfo[] properties = type.GetProperties();
 
         foreach (PropertyInfo prop in properties)
         {
-            Console.WriteLine(prop.Name);
-            if (prop.Name == "PatientId")
+            Console.Write($"  Властивість: {prop.PropertyType.Name} {prop.Name}");
+            var attributes = prop.GetCustomAttributes();
+            bool hasAttributes = false;
+
+            foreach (var attr in attributes)
             {
-                Console.WriteLine("[Required]");
-                Console.WriteLine("[MinValue]");
+                if (!hasAttributes)
+                {
+                    Console.Write(" [Атрибути: ");
+                    hasAttributes = true;
+                }
+                string attrName = attr.GetType().Name;
+                if (attrName.EndsWith("Attribute"))
+                {
+                    attrName = attrName.Substring(0, attrName.Length - "Attribute".Length);
+                }
+                Console.Write($"{attrName} ");
             }
-            else if (prop.Name == "Diagnosis")
-            {
-                Console.WriteLine("[Required]");
-                Console.WriteLine("[MaxLength]");
-            }
-            else if (prop.Name == "DurationDays")
-            {
-                Console.WriteLine("[Required]");
-                Console.WriteLine("[MinValue]");
-            }
+            if (hasAttributes) Console.Write("]");
+            Console.WriteLine();
         }
     }
 }
