@@ -1,4 +1,5 @@
 ﻿using ClinicApp.Managers;
+using ClinicApp.Utils;
 
 namespace ClinicApp;
 
@@ -10,6 +11,9 @@ public class Clinic
     public BillingManager Billing { get; set; }
     public AnalyticsManager Analytics { get; set; }
     public TreatmentPlanManager TreatmentPlans { get; set; }
+    public ClinicLogger Logger { get; set; }
+    public ClinicExporter Exporter { get; set; }
+    public SessionManager Session { get; set; }
 
     public Clinic()
     {
@@ -19,5 +23,8 @@ public class Clinic
         Billing = new BillingManager(Appointments);
         Analytics = new AnalyticsManager(Appointments, Doctors, Patients);
         TreatmentPlans = new TreatmentPlanManager();
+        Logger = new ClinicLogger();
+        Exporter = new ClinicExporter(this);
+        Session = new SessionManager();
     }
 }
