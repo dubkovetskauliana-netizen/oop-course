@@ -1,4 +1,5 @@
-﻿using ClinicApp.Models;
+﻿using ClinicApp.Events;
+using ClinicApp.Models;
 using ClinicApp.Utils;
 using System;
 using System.Globalization;
@@ -8,12 +9,18 @@ namespace ClinicApp;
 
 class Program
 {
+    private static void OnAppointmentBookedConsole(object? sender, AppointmentEventArgs e)
+    {
+        Console.WriteLine($"[EVENT] Запис #{e.AppointmentId} створено: пацієнт #{e.PatientId} → лікар #{e.DoctorId}, {e.ScheduledAt:dd.MM.yyyy HH:mm}");
+    }
+
     static void Main(string[] args)
     {
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
         Clinic clinic = new Clinic();
+        clinic.Appointments.AppointmentBooked += OnAppointmentBookedConsole;
 
         if (clinic.Session.Exists())
         {
