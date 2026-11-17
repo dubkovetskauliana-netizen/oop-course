@@ -1,4 +1,5 @@
-﻿using ClinicApp.Models;
+﻿using ClinicApp.Events;
+using ClinicApp.Models;
 using ClinicApp.Utils;
 using System;
 using System.Globalization;
@@ -8,12 +9,18 @@ namespace ClinicApp;
 
 class Program
 {
+    private static void OnAppointmentBookedConsole(object? sender, AppointmentEventArgs e)
+    {
+        Console.WriteLine($"[EVENT] Запис #{e.AppointmentId} створено: пацієнт #{e.PatientId} → лікар #{e.DoctorId}, {e.ScheduledAt:dd.MM.yyyy HH:mm}");
+    }
+
     static void Main(string[] args)
     {
         Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
         Console.OutputEncoding = System.Text.Encoding.UTF8;
 
         Clinic clinic = new Clinic();
+        clinic.Appointments.AppointmentBooked += OnAppointmentBookedConsole;
 
         if (clinic.Session.Exists())
         {
@@ -47,6 +54,9 @@ class Program
             string choice = Console.ReadLine();
             if (choice == "0")
             {
+                clinic.Tracker.PrintSummary();
+                clinic.Tracker.SaveSummary();
+
                 Console.Write("Зберегти сесію? (y/n): ");
                 string saveAnswer = Console.ReadLine();
                 if (saveAnswer != null && saveAnswer.Trim().ToLower() == "y")
@@ -197,7 +207,7 @@ class Program
                                 Console.WriteLine("План не знайдено");
                                 clinic.Logger.LogWarning($"Спроба завершити неіснуючий план #{id}");
                             }
-                            else if (!plan.Complete())
+                            else if (!clinic.TreatmentPlans.Complete(id))
                             {
                                 Console.WriteLine("Перехід неможливий");
                                 clinic.Logger.LogWarning($"Неможливий перехід статусу при завершенні плану #{id}");
@@ -205,7 +215,6 @@ class Program
                             else
                             {
                                 Console.WriteLine("План успішно завершено!");
-                                clinic.Logger.LogInfo($"План лікування #{id} завершено");
                             }
                         }
                         else

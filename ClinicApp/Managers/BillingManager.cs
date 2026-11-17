@@ -1,20 +1,21 @@
 ﻿using System;
 using ClinicApp.Models;
 using ClinicApp.Interfaces;
+using ClinicApp.Events;
 
 namespace ClinicApp.Managers
 {
     public class BillingManager
     {
-        // Сувора вимога 5: збереження менеджера у приватній readonly-змінній
         private readonly AppointmentManager _appointmentManager;
+
+        public event EventHandler<PaymentEventArgs>? PaymentReceived;
 
         public BillingManager(AppointmentManager appointmentManager)
         {
             _appointmentManager = appointmentManager ?? throw new ArgumentNullException(nameof(appointmentManager));
         }
 
-        // Сувора вимога 7: єдиний спільний приватний метод для фільтрації неоплачених і нескасованих записів
         private IPayable[] FilterUnpaid(Appointment[] baseRecords)
         {
             if (baseRecords == null) return new IPayable[0];
@@ -34,7 +35,7 @@ namespace ClinicApp.Managers
             {
                 if (baseRecords[i] != null && !baseRecords[i].IsPaid && !baseRecords[i].IsCancelled)
                 {
-                    result[index] = baseRecords[i]; // автоприведення до інтерфейсу IPayable
+                    result[index] = baseRecords[i];
                     index++;
                 }
             }
@@ -49,7 +50,6 @@ namespace ClinicApp.Managers
 
         public IPayable[] GetUnpaidByPatient(int patientId)
         {
-            // Беремо всі записи, фільтруємо по конкретному пацієнту через цикл
             Appointment[] all = _appointmentManager.GetAll();
             int count = 0;
             for (int i = 0; i < all.Length; i++)
@@ -101,6 +101,7 @@ namespace ClinicApp.Managers
                 return false;
             }
             app.MarkPaid();
+            PaymentReceived?.Invoke(this, new PaymentEventArgs(app.Id, app.GetCost()));
             return true;
         }
 
@@ -118,7 +119,6 @@ namespace ClinicApp.Managers
 
                 string costString = items[i].GetCost().ToString("F2");
 
-                // Сувора вимога 10: якщо об'єкт є типом Appointment (через оператор is) — виводимо його деталі
                 if (items[i] is Appointment appointment)
                 {
                     Console.WriteLine($"{appointment} | Сума: {costString} грн");

@@ -1,6 +1,7 @@
 ﻿using System;
 using ClinicApp.Models;
 using ClinicApp.Interfaces;
+using ClinicApp.Events;
 
 namespace ClinicApp.Managers
 {
@@ -8,6 +9,11 @@ namespace ClinicApp.Managers
     {
         private readonly Appointment[] _appointments = new Appointment[1000];
         private int _count = 0;
+
+        public event EventHandler<AppointmentEventArgs>? AppointmentBooked;
+        public event EventHandler<AppointmentEventArgs>? AppointmentCancelled;
+        public event EventHandler<AppointmentEventArgs>? AppointmentCompleted;
+        public event EventHandler<AppointmentEventArgs>? UrgentAppointmentBooked;
 
         public int Count
         {
@@ -22,7 +28,6 @@ namespace ClinicApp.Managers
         {
         }
 
-        // Приватний допоміжний метод, щоб не копіювати логіку перевірок і додавання
         private bool InternalAddAndCheck(Appointment appointment)
         {
             if (appointment == null) return false;
@@ -38,33 +43,77 @@ namespace ClinicApp.Managers
             return true;
         }
 
+        private AppointmentEventArgs CreateEventArgs(Appointment appointment)
+        {
+            return new AppointmentEventArgs(
+                appointment.Id,
+                appointment.PatientId,
+                appointment.DoctorId,
+                appointment.ScheduledAt,
+                appointment.Notes
+            );
+        }
+
+        private bool BookInternal(Appointment appointment)
+        {
+            if (InternalAddAndCheck(appointment))
+            {
+                AppointmentBooked?.Invoke(this, CreateEventArgs(appointment));
+                return true;
+            }
+            return false;
+        }
+
         public void Add(Appointment appointment)
         {
             InternalAddAndCheck(appointment);
         }
 
-        // Задача 3: Метод створює RegularAppointment замість звичайного Appointment
         public bool Book(int patientId, int doctorId, DateTime scheduledAt)
         {
             RegularAppointment appointment = new RegularAppointment(patientId, doctorId, scheduledAt);
-            return InternalAddAndCheck(appointment);
+            return BookInternal(appointment);
         }
 
-        // Задача 3: Метод для створення термінового прийому
         public bool BookUrgent(int patientId, int doctorId, DateTime scheduledAt, string urgencyNote = "", int durationMinutes = 30)
         {
             UrgentAppointment appointment = new UrgentAppointment(patientId, doctorId, scheduledAt, urgencyNote, durationMinutes);
-            return InternalAddAndCheck(appointment);
+            if (BookInternal(appointment))
+            {
+                UrgentAppointmentBooked?.Invoke(this, CreateEventArgs(appointment));
+                return true;
+            }
+            return false;
         }
 
-        // Задача 3: Метод для створення прийому спеціаліста
         public bool BookSpecialist(int patientId, int doctorId, DateTime scheduledAt, string topic = "", int durationMinutes = 45)
         {
             SpecialistAppointment appointment = new SpecialistAppointment(patientId, doctorId, scheduledAt, topic, durationMinutes);
-            return InternalAddAndCheck(appointment);
+            return BookInternal(appointment);
         }
 
-        // Задача 4: Методи відбору за типом (двопрохідний патерн з оператором is)
+        public bool Cancel(int appointmentId, string reason = "")
+        {
+            Appointment appointment = FindById(appointmentId);
+            if (appointment != null && appointment.Cancel(reason))
+            {
+                AppointmentCancelled?.Invoke(this, CreateEventArgs(appointment));
+                return true;
+            }
+            return false;
+        }
+
+        public bool Complete(int appointmentId)
+        {
+            Appointment appointment = FindById(appointmentId);
+            if (appointment != null && appointment.Complete())
+            {
+                AppointmentCompleted?.Invoke(this, CreateEventArgs(appointment));
+                return true;
+            }
+            return false;
+        }
+
         public Appointment[] GetUrgent()
         {
             int matchCount = 0;
@@ -197,7 +246,6 @@ namespace ClinicApp.Managers
             return result;
         }
 
-        // Задача 4: Відображення одного запису (використовує віртуальні методи базового класу)
         public void DisplayAppointment(Appointment appointment)
         {
             if (appointment != null)
@@ -206,7 +254,6 @@ namespace ClinicApp.Managers
             }
         }
 
-        // Задача 4: Оновлений метод виведення списку (жодного if за типом об'єкта!)
         public void DisplayList(Appointment[] items)
         {
             if (items == null || items.Length == 0)
@@ -233,7 +280,7 @@ namespace ClinicApp.Managers
             return result;
         }
 
-        public static int CancelAll(ICancellable[] items, string reason = "")
+        public int CancelAll(ICancellable[] items, string reason = "")
         {
             if (items == null) return 0;
 
@@ -245,6 +292,10 @@ namespace ClinicApp.Managers
                     if (items[i].Cancel(reason))
                     {
                         cancelledCount++;
+                        if (items[i] is Appointment app)
+                        {
+                            AppointmentCancelled?.Invoke(this, CreateEventArgs(app));
+                        }
                     }
                 }
             }
