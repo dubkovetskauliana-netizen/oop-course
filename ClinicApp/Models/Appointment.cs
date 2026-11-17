@@ -1,11 +1,11 @@
 ﻿using System;
 using ClinicApp.Enums;
+using ClinicApp.Interfaces;
 using ClinicApp.Utils;
 
 namespace ClinicApp.Models;
 
-public class Appointment : ClinicApp.Interfaces.IIdentifiable
-
+public class Appointment : IIdentifiable, IPayable, ICancellable
 {
     private static int _nextId = 1;
 
@@ -23,8 +23,13 @@ public class Appointment : ClinicApp.Interfaces.IIdentifiable
 
     public string Notes { get; set; }
 
-    // Задача 5: Множник знижки (за замовчуванням 1.0m, тобто без знижки)
     public decimal DiscountMultiplier { get; set; } = 1.0m;
+
+    public bool IsPaid { get; private set; }
+
+    public bool IsCancelled => Status == AppointmentStatus.Cancelled;
+
+    public string CancellationReason { get; private set; }
 
     public int DurationMinutes
     {
@@ -45,6 +50,13 @@ public class Appointment : ClinicApp.Interfaces.IIdentifiable
         DurationMinutes = durationMinutes;
         Status = AppointmentStatus.Scheduled;
         Notes = "";
+        IsPaid = false;
+        CancellationReason = "";
+    }
+
+    public void MarkPaid()
+    {
+        IsPaid = true;
     }
 
     public bool Cancel(string reason = "")
@@ -52,6 +64,7 @@ public class Appointment : ClinicApp.Interfaces.IIdentifiable
         if (Status == AppointmentStatus.Scheduled)
         {
             Status = AppointmentStatus.Cancelled;
+            CancellationReason = reason;
             Notes = reason;
             return true;
         }
@@ -68,7 +81,6 @@ public class Appointment : ClinicApp.Interfaces.IIdentifiable
         return false;
     }
 
-    // Задача 5: Враховуємо множник знижки у базовій вартості
     public virtual decimal GetCost()
     {
         return (DurationMinutes * 10) * DiscountMultiplier;

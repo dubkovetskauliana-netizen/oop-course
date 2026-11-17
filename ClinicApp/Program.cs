@@ -27,6 +27,7 @@ class Program
             Console.WriteLine("|| 5. Рахунки      – оплата, борги            ||");
             Console.WriteLine("|| 6. Звіт         – загальна статистика      ||");
             Console.WriteLine("|| 9. Плани лікування – рефлексія, атрибути   ||");
+            Console.WriteLine("|| 10. Файли       – журнали, звіти, CSV      ||");
             Console.WriteLine("|| 0. Вийти                                   ||");
             Console.WriteLine("================================================");
             Console.Write("Оберіть розділ: ");
@@ -39,6 +40,9 @@ class Program
                 case "9":
                     TreatmentPlansMenu(clinic);
                     break;
+                case "10":
+                    FilesMenu(clinic);
+                    break;
                 case "1":
                 case "2":
                 case "3":
@@ -49,6 +53,7 @@ class Program
                     break;
                 default:
                     Console.WriteLine("Некоректний вибір.");
+                    clinic.Logger.LogWarning($"Некоректний вибір у головному меню: {choice}");
                     break;
             }
         }
@@ -87,10 +92,23 @@ class Program
 
                 case "2":
                     {
-                        TreatmentPlan newPlan = FormBuilder.Build<TreatmentPlan>();
-                        if (clinic.TreatmentPlans.Add(newPlan))
+                        try
                         {
-                            Console.WriteLine($"План лікування успішно створено! ID: {newPlan.Id}");
+                            TreatmentPlan newPlan = FormBuilder.Build<TreatmentPlan>();
+                            if (clinic.TreatmentPlans.Add(newPlan))
+                            {
+                                Console.WriteLine("План лікування успішно створено!");
+                                clinic.Logger.LogInfo($"План лікування #{newPlan.Id} створено для пацієнта #{newPlan.PatientId}");
+                            }
+                            else
+                            {
+                                clinic.Logger.LogWarning("Не вдалося додати план лікування.");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Помилка: {ex.Message}");
+                            clinic.Logger.LogWarning($"Помилка введення: {ex.Message}");
                         }
                     }
                     break;
@@ -107,6 +125,11 @@ class Program
                                 Console.WriteLine($"ID: {p.Id} | Діагноз: {p.Diagnosis} | Статус: {p.Status}");
                             }
                         }
+                        else
+                        {
+                            Console.WriteLine("Некоректний ID.");
+                            clinic.Logger.LogWarning("Помилка введення: некоректний ID пацієнта.");
+                        }
                     }
                     break;
 
@@ -119,15 +142,23 @@ class Program
                             if (plan == null)
                             {
                                 Console.WriteLine("План не знайдено");
+                                clinic.Logger.LogWarning($"Спроба активувати неіснуючий план #{id}");
                             }
                             else if (!plan.Activate())
                             {
                                 Console.WriteLine("Перехід неможливий");
+                                clinic.Logger.LogWarning($"Неможливий перехід статусу при активації плану #{id}");
                             }
                             else
                             {
                                 Console.WriteLine("План успішно активовано!");
+                                clinic.Logger.LogInfo($"План лікування #{id} активовано");
                             }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Некоректний ID.");
+                            clinic.Logger.LogWarning("Помилка введення: некоректний ID плану.");
                         }
                     }
                     break;
@@ -141,15 +172,23 @@ class Program
                             if (plan == null)
                             {
                                 Console.WriteLine("План не знайдено");
+                                clinic.Logger.LogWarning($"Спроба завершити неіснуючий план #{id}");
                             }
                             else if (!plan.Complete())
                             {
                                 Console.WriteLine("Перехід неможливий");
+                                clinic.Logger.LogWarning($"Неможливий перехід статусу при завершенні плану #{id}");
                             }
                             else
                             {
                                 Console.WriteLine("План успішно завершено!");
+                                clinic.Logger.LogInfo($"План лікування #{id} завершено");
                             }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Некоректний ID.");
+                            clinic.Logger.LogWarning("Помилка введення: некоректний ID плану.");
                         }
                     }
                     break;
@@ -163,15 +202,23 @@ class Program
                             if (plan == null)
                             {
                                 Console.WriteLine("План не знайдено");
+                                clinic.Logger.LogWarning($"Спроба скасувати неіснуючий план #{id}");
                             }
                             else if (!plan.Cancel())
                             {
                                 Console.WriteLine("Перехід неможливий");
+                                clinic.Logger.LogWarning($"Неможливий перехід статусу при скасуванні плану #{id}");
                             }
                             else
                             {
-                                Console.WriteLine("План успішно скасовано!");
+                                Console.WriteLine("План скасовано.");
+                                clinic.Logger.LogInfo($"План лікування #{id} скасовано");
                             }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Некоректний ID.");
+                            clinic.Logger.LogWarning("Помилка введення: некоректний ID плану.");
                         }
                     }
                     break;
@@ -179,7 +226,57 @@ class Program
                 case "7":
                     ModelValidator.PrintInfo(typeof(TreatmentPlan));
                     break;
-
+                default:
+                    Console.WriteLine("Некоректний варіант.");
+                    clinic.Logger.LogWarning($"Некоректний вибір у меню планів: {choice}");
+                    break;
+            }
+        }
+    }
+    private static void FilesMenu(Clinic clinic)
+    {
+        while (true)
+        {
+            Console.WriteLine("\n--- Файли ---");
+            Console.WriteLine("1. Останні рядки лога");
+            Console.WriteLine("2. Очистити лог");
+            Console.WriteLine("3. Назад");
+            Console.Write("Оберіть дію: ");
+            string choice = Console.ReadLine();
+            if (choice == "3") break;
+            switch (choice)
+            {
+                case "1":
+                    {
+                        Console.Write("Кількість рядків N: ");
+                        if (int.TryParse(Console.ReadLine(), out int n))
+                        {
+                            string[] lines = clinic.Logger.GetLastLines(n);
+                            if (lines.Length == 0)
+                            {
+                                Console.WriteLine("Лог порожній або файл не існує.");
+                            }
+                            else
+                            {
+                                for (int i = 0; i < lines.Length; i++)
+                                {
+                                    Console.WriteLine(lines[i]);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Некоректне число.");
+                            clinic.Logger.LogWarning("Помилка введення: некоректне число рядків лога.");
+                        }
+                    }
+                    break;
+                case "2":
+                    {
+                        clinic.Logger.Clear();
+                        Console.WriteLine("Лог очищено.");
+                    }
+                    break;
                 default:
                     Console.WriteLine("Некоректний варіант.");
                     break;
