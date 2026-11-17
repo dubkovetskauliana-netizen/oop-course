@@ -204,7 +204,7 @@ class Program
                                 Console.WriteLine("План не знайдено");
                                 clinic.Logger.LogWarning($"Спроба завершити неіснуючий план #{id}");
                             }
-                            else if (!plan.Complete())
+                            else if (!clinic.TreatmentPlans.Complete(id))
                             {
                                 Console.WriteLine("Перехід неможливий");
                                 clinic.Logger.LogWarning($"Неможливий перехід статусу при завершенні плану #{id}");
@@ -212,7 +212,6 @@ class Program
                             else
                             {
                                 Console.WriteLine("План успішно завершено!");
-                                clinic.Logger.LogInfo($"План лікування #{id} завершено");
                             }
                         }
                         else

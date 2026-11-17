@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using ClinicApp.Enums;
+using ClinicApp.Events;
 using ClinicApp.Models;
 
 namespace ClinicApp.Managers;
 
 public class PatientManager
 {
-    // Задача 1: Внутрішнє сховище замінено на List<Patient>
     private readonly List<Patient> _patients = new List<Patient>();
 
-    // Задача 1: Повертаємо кількість елементів списку за допомогою вбудованої властивості
+    public event EventHandler<PatientEventArgs>? PatientAdded;
+
     public int Count => _patients.Count;
 
     public Patient? this[int index]
@@ -22,13 +23,13 @@ public class PatientManager
         }
     }
 
-    // Задача 1: Додавання в динамічний список без ручної перевірки ліміту
     public void Add(Patient patient)
     {
         if (patient == null) return;
 
         _patients.Add(patient);
         Console.WriteLine("Пацієнта [" + patient.Id + "] " + patient.FullName + " додано.");
+        PatientAdded?.Invoke(this, new PatientEventArgs(patient.Id, patient.FullName));
     }
 
     public Patient? FindById(int id)
@@ -52,7 +53,6 @@ public class PatientManager
         return false;
     }
 
-    // Задача 1: Використовуємо проміжний List<Patient> та в кінці повертаємо звичайний масив
     public Patient[] FindByName(string name)
     {
         string search = name.ToLower();
@@ -68,7 +68,6 @@ public class PatientManager
         return resultList.ToArray();
     }
 
-    // Задача 1: Використовуємо проміжний список і метод .ToArray()
     public Patient[] FindByBloodType(BloodType bloodType)
     {
         List<Patient> resultList = new List<Patient>();
@@ -83,7 +82,6 @@ public class PatientManager
         return resultList.ToArray();
     }
 
-    // Задача 1: Видалення зі списку замість ручного зсуву елементів масиву
     public bool Remove(int id)
     {
         Patient? found = FindById(id);
@@ -95,7 +93,6 @@ public class PatientManager
         return false;
     }
 
-    // Задача 1: Повертаємо масив однією швидкою операцією замість копіювання у циклі
     public Patient[] GetAll()
     {
         return _patients.ToArray();

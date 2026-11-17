@@ -11,6 +11,9 @@ namespace ClinicApp.Managers
         private int _count = 0;
 
         public event EventHandler<AppointmentEventArgs>? AppointmentBooked;
+        public event EventHandler<AppointmentEventArgs>? AppointmentCancelled;
+        public event EventHandler<AppointmentEventArgs>? AppointmentCompleted;
+        public event EventHandler<AppointmentEventArgs>? UrgentAppointmentBooked;
 
         public int Count
         {
@@ -40,18 +43,22 @@ namespace ClinicApp.Managers
             return true;
         }
 
+        private AppointmentEventArgs CreateEventArgs(Appointment appointment)
+        {
+            return new AppointmentEventArgs(
+                appointment.Id,
+                appointment.PatientId,
+                appointment.DoctorId,
+                appointment.ScheduledAt,
+                appointment.Notes
+            );
+        }
+
         private bool BookInternal(Appointment appointment)
         {
             if (InternalAddAndCheck(appointment))
             {
-                AppointmentEventArgs args = new AppointmentEventArgs(
-                    appointment.Id,
-                    appointment.PatientId,
-                    appointment.DoctorId,
-                    appointment.ScheduledAt,
-                    appointment.Notes
-                );
-                AppointmentBooked?.Invoke(this, args);
+                AppointmentBooked?.Invoke(this, CreateEventArgs(appointment));
                 return true;
             }
             return false;
@@ -71,13 +78,40 @@ namespace ClinicApp.Managers
         public bool BookUrgent(int patientId, int doctorId, DateTime scheduledAt, string urgencyNote = "", int durationMinutes = 30)
         {
             UrgentAppointment appointment = new UrgentAppointment(patientId, doctorId, scheduledAt, urgencyNote, durationMinutes);
-            return BookInternal(appointment);
+            if (BookInternal(appointment))
+            {
+                UrgentAppointmentBooked?.Invoke(this, CreateEventArgs(appointment));
+                return true;
+            }
+            return false;
         }
 
         public bool BookSpecialist(int patientId, int doctorId, DateTime scheduledAt, string topic = "", int durationMinutes = 45)
         {
             SpecialistAppointment appointment = new SpecialistAppointment(patientId, doctorId, scheduledAt, topic, durationMinutes);
             return BookInternal(appointment);
+        }
+
+        public bool Cancel(int appointmentId, string reason = "")
+        {
+            Appointment appointment = FindById(appointmentId);
+            if (appointment != null && appointment.Cancel(reason))
+            {
+                AppointmentCancelled?.Invoke(this, CreateEventArgs(appointment));
+                return true;
+            }
+            return false;
+        }
+
+        public bool Complete(int appointmentId)
+        {
+            Appointment appointment = FindById(appointmentId);
+            if (appointment != null && appointment.Complete())
+            {
+                AppointmentCompleted?.Invoke(this, CreateEventArgs(appointment));
+                return true;
+            }
+            return false;
         }
 
         public Appointment[] GetUrgent()
@@ -246,7 +280,7 @@ namespace ClinicApp.Managers
             return result;
         }
 
-        public static int CancelAll(ICancellable[] items, string reason = "")
+        public int CancelAll(ICancellable[] items, string reason = "")
         {
             if (items == null) return 0;
 
@@ -258,6 +292,10 @@ namespace ClinicApp.Managers
                     if (items[i].Cancel(reason))
                     {
                         cancelledCount++;
+                        if (items[i] is Appointment app)
+                        {
+                            AppointmentCancelled?.Invoke(this, CreateEventArgs(app));
+                        }
                     }
                 }
             }
