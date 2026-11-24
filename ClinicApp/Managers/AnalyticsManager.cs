@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ClinicApp.Models;
 
 namespace ClinicApp.Managers
@@ -19,66 +20,42 @@ namespace ClinicApp.Managers
 
         public IEnumerable<DoctorStats> ComputeDoctorStats()
         {
-            var doctorsList = _doctors.GetAll();
+            var appointmentsList = _appointments.GetAll().Where(a => a != null);
 
-            foreach (var doctor in doctorsList)
-            {
-                if (doctor == null) continue;
-
-                int count = 0;
-                decimal revenue = 0;
-                DateTime lastDate = DateTime.MinValue;
-
-                var appointmentsList = _appointments.GetAll();
-                foreach (var app in appointmentsList)
+            return _doctors.GetAll()
+                .Where(d => d != null)
+                .Select(d =>
                 {
-                    // Використовуємо правильне поле ScheduledAt з вашого AppointmentManager
-                    if (app != null && app.DoctorId == doctor.Id)
-                    {
-                        count++;
-                        revenue += app.GetCost();
+                    var doctorApps = appointmentsList.Where(a => a.DoctorId == d.Id);
 
-                        if (app.ScheduledAt > lastDate)
-                        {
-                            lastDate = app.ScheduledAt;
-                        }
-                    }
-                }
+                    int count = doctorApps.Count();
+                    decimal revenue = doctorApps.Sum(a => a.GetCost());
+                    DateTime lastDate = doctorApps.Any()
+                        ? doctorApps.Max(a => a.ScheduledAt)
+                        : DateTime.MinValue;
 
-                yield return new DoctorStats(doctor.Id, doctor.FullName, count, revenue, lastDate);
-            }
+                    return new DoctorStats(d.Id, d.FullName, count, revenue, lastDate);
+                });
         }
 
         public IEnumerable<PatientStats> ComputePatientStats()
         {
-            var patientsList = _patients.GetAll();
+            var appointmentsList = _appointments.GetAll().Where(a => a != null);
 
-            foreach (var patient in patientsList)
-            {
-                if (patient == null) continue;
-
-                int count = 0;
-                decimal spent = 0;
-                DateTime lastDate = DateTime.MinValue;
-
-                var appointmentsList = _appointments.GetAll();
-                foreach (var app in appointmentsList)
+            return _patients.GetAll()
+                .Where(p => p != null)
+                .Select(p =>
                 {
-                    // Використовуємо правильне поле ScheduledAt з вашого AppointmentManager
-                    if (app != null && app.PatientId == patient.Id)
-                    {
-                        count++;
-                        spent += app.GetCost();
+                    var patientApps = appointmentsList.Where(a => a.PatientId == p.Id);
 
-                        if (app.ScheduledAt > lastDate)
-                        {
-                            lastDate = app.ScheduledAt;
-                        }
-                    }
-                }
+                    int count = patientApps.Count();
+                    decimal spent = patientApps.Sum(a => a.GetCost());
+                    DateTime lastDate = patientApps.Any()
+                        ? patientApps.Max(a => a.ScheduledAt)
+                        : DateTime.MinValue;
 
-                yield return new PatientStats(patient.Id, patient.FullName, count, spent, lastDate);
-            }
+                    return new PatientStats(p.Id, p.FullName, count, spent, lastDate);
+                });
         }
     }
 }
