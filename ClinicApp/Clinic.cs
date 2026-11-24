@@ -12,6 +12,7 @@ public class Clinic
     public MedicalRecordManager MedicalRecords { get; set; }
     public BillingManager Billing { get; set; }
     public AnalyticsManager Analytics { get; set; }
+    public ReportManager Reports { get; set; }
     public TreatmentPlanManager TreatmentPlans { get; set; }
     public WaitingQueue<Patient> WaitingQueue { get; set; }
     public ClinicLogger Logger { get; set; }
@@ -28,6 +29,7 @@ public class Clinic
         MedicalRecords = new MedicalRecordManager();
         Billing = new BillingManager(Appointments);
         Analytics = new AnalyticsManager(Appointments, Doctors, Patients);
+        Reports = new ReportManager(Appointments, Doctors, Patients);
         TreatmentPlans = new TreatmentPlanManager();
         WaitingQueue = new WaitingQueue<Patient>();
         Logger = new ClinicLogger();
@@ -50,7 +52,7 @@ public class Clinic
 
         Patients.PatientAdded += Passport.OnPatientAdded;
         Appointments.AppointmentCompleted += Passport.OnAppointmentCompleted;
-        TreatmentPlans.PlanCompleted += Passport.OnPlanCompleted;
+        TreatmentPlans.PlanCompleted += Logger.OnPlanCompleted;
 
         Patients.PatientAdded += Tracker.OnPatientAdded;
         Appointments.AppointmentBooked += Tracker.OnAppointmentBooked;
